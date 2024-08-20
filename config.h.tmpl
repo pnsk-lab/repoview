@@ -1,0 +1,50 @@
+/*
+ * $Id$
+ *
+ * This is the config.h template.
+ */
+
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+
+/* Your instance name. */
+#define INSTANCE_NAME	"Unnamed"
+
+/* Admin name/email. */
+#define INSTANCE_ADMIN	"John Doe <john.doe@example.com>"
+
+/* Instance Root. */
+#define INSTANCE_ROOT	"/cgi-bin"
+
+/* Instance Logo. */
+#define INSTANCE_LOGO	"/logo.png"
+
+/* Theme. */
+#undef USE_OPTIMIZED
+#define USE_MODERN
+
+/* Database type. */
+#define USE_SQLITE
+#undef USE_GDBM
+#undef USE_NDBM
+
+/* Authentication type. */
+#define USE_COOKIE
+
+/* PATH, uses PATH from environment automatically if not defined. */
+#undef USE_PATH
+
+/* SVN filesystem root. */
+#define SVN_ROOT "/www/svn"
+
+/* Database root. */
+#define DB_ROOT "/www/db"
+
+/* Apache htpasswd file. */
+#define APACHE_PASSWD "/www/passwd"
+
+#endif
+
+/*
+vim: syntax=c
+*/
