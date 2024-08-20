@@ -3,7 +3,9 @@
 #include "rv_auth.h"
 
 #include "rv_util.h"
+#include "rv_db.h"
 
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -68,9 +70,23 @@ void parse_cookie(void) {
 }
 
 char* rv_logged_in(void) {
-	parse_cookie();
+	int i;
+	for(i = 0; cookie_entries[i] != NULL; i++) {
+		if(strcmp(cookie_entries[i]->key, "token") == 0) {
+			return rv_who_has_token(cookie_entries[i]->value);
+			break;
+		}
+	}
 	return NULL;
 }
+
+void rv_save_login(const char* username) {
+	char* token = rv_new_token(username);
+	printf("Set-Cookie: token=%s; HttpOnly\r\n", token);
+	free(token);
+}
+
+void rv_init_auth(void) { parse_cookie(); }
 
 void rv_free_auth(void) {
 	int i;

@@ -5,6 +5,7 @@
 #include "../config.h"
 
 #include "rv_version.h"
+#include "rv_db.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,4 +73,18 @@ char* rv_url_decode(const char* str) {
 		}
 	}
 	return r;
+}
+
+char* rv_new_token(const char* username) {
+	const char tokenstr[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+	char* token = malloc(17);
+	token[16] = 0;
+	int i;
+regenerate:
+	for(i = 0; i < 16; i++) {
+		token[i] = tokenstr[rand() % strlen(tokenstr)];
+	}
+	if(rv_has_token(token)) goto regenerate;
+	rv_save_token(username, token);
+	return token;
 }

@@ -59,11 +59,17 @@ void render_page(void) {
 
 		rv_load_query('P');
 		if(rv_get_query("username") == NULL || rv_get_query("password") == NULL) {
-			add_data(&page, "Invalid form\n");
+			add_data(&page, "Invalid form.\n");
 		} else {
 			if(rv_has_user(rv_get_query("username"))) {
+				if(rv_check_password(rv_get_query("username"), rv_get_query("password"))) {
+					add_data(&page, "Welcome back.\n");
+					rv_save_login(rv_get_query("username"));
+				} else {
+					add_data(&page, "Invalid password.");
+				}
 			} else {
-				add_data(&page, "User does not exist");
+				add_data(&page, "User does not exist.");
 			}
 		}
 	}
@@ -103,6 +109,7 @@ char* escape(const char* str) {
 }
 
 void render_stuff(void) {
+	char* user = rv_logged_in();
 	char* escaped;
 	add_data(&buffer, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n");
 	add_data(&buffer, "<html>\n");
@@ -218,11 +225,13 @@ void render_stuff(void) {
 	add_data(&buffer, INSTANCE_ROOT);
 	add_data(&buffer, "/\">Home</a>\n");
 	add_data(&buffer, "			</div>\n");
-	add_data(&buffer, "			<div>\n");
-	add_data(&buffer, "				<a href=\"");
-	add_data(&buffer, INSTANCE_ROOT);
-	add_data(&buffer, "/?page=login\">Login</a>\n");
-	add_data(&buffer, "			</div>\n");
+	if(user == NULL) {
+		add_data(&buffer, "			<div>\n");
+		add_data(&buffer, "				<a href=\"");
+		add_data(&buffer, INSTANCE_ROOT);
+		add_data(&buffer, "/?page=login\">Login</a>\n");
+		add_data(&buffer, "			</div>\n");
+	}
 	add_data(&buffer, "		</div>\n");
 	add_data(&buffer, "		<div id=\"desc\">\n");
 	add_data(&buffer, "			<div id=\"descinside\">\n");
@@ -263,4 +272,5 @@ void render_stuff(void) {
 	add_data(&buffer, "		</div>\n");
 	add_data(&buffer, "	</body>\n");
 	add_data(&buffer, "</html>\n");
+	if(user != NULL) free(user);
 }

@@ -12,10 +12,12 @@
 #include "rv_auth.h"
 
 #include <stdlib.h>
+#include <time.h>
 
 char* postdata;
 
 int main() {
+	srand(time(NULL));
 	rv_check_sanity();
 	rv_init_db();
 	rv_parse_query(getenv("QUERY_STRING"));
@@ -33,6 +35,7 @@ int main() {
 	}
 	rv_parse_query(postdata);
 	rv_save_query('P');
+	rv_init_auth();
 	rv_process_page();
 	printf("Content-Type: text/html\r\n");
 	printf("\r\n");

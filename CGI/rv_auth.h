@@ -7,5 +7,7 @@
 
 char* rv_logged_in(void);
 void rv_free_auth(void);
+void rv_init_auth(void);
+void rv_save_login(const char* username);
 
 #endif

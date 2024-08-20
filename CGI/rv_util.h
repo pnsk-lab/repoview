@@ -14,5 +14,6 @@ char* rv_strcat3(const char* a, const char* b, const char* c);
 char* rv_strdup(const char* str);
 char* rv_url_decode(const char* str);
 void rv_error_http(void);
+char* rv_new_token(const char* username);
 
 #endif
