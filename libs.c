@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-int main(){
+int main() {
 #if defined(USE_SQLITE)
 	printf("-lsqlite3");
 #elif defined(USE_GDBM)

@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-bool rv_find_executable(const char* name){
+bool rv_find_executable(const char* name) {
 #ifdef USE_PATH
 	char* path = rv_strcat(USE_PATH, "");
 #else
@@ -19,8 +19,8 @@ bool rv_find_executable(const char* name){
 #endif
 	int i;
 	int incr = 0;
-	for(i = 0;; i++){
-		if(path[i] == 0 || path[i] == PATH_DELIM){
+	for(i = 0;; i++) {
+		if(path[i] == 0 || path[i] == PATH_DELIM) {
 			char oldc = path[i];
 			path[i] = 0;
 			char* exec = rv_strcat3(path + incr, "/", name);
@@ -29,7 +29,7 @@ bool rv_find_executable(const char* name){
 			exec = rv_strcat(exec, ".exe");
 			free(tmp);
 #endif
-			if(access(exec, F_OK) == 0){
+			if(access(exec, F_OK) == 0) {
 				free(exec);
 				free(path);
 				return true;
@@ -43,7 +43,7 @@ bool rv_find_executable(const char* name){
 	return false;
 }
 
-void rv_check_sanity(void){
+void rv_check_sanity(void) {
 	bool sane = true;
 
 	bool svnlook = rv_find_executable("svnlook");
@@ -54,7 +54,7 @@ void rv_check_sanity(void){
 	if(!svnadmin) sane = false;
 	if(!htpasswd) sane = false;
 
-	if(!sane){
+	if(!sane) {
 		rv_error_http();
 		if(!svnlook) printf("svnlook not found\n");
 		if(!svnadmin) printf("svnadmin not found\n");

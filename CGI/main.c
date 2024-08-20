@@ -9,12 +9,13 @@
 #include "rv_page.h"
 #include "rv_util.h"
 #include "rv_db.h"
+#include "rv_auth.h"
 
 #include <stdlib.h>
 
 char* postdata;
 
-int main(){
+int main() {
 	rv_check_sanity();
 	rv_init_db();
 	rv_parse_query(getenv("QUERY_STRING"));
@@ -23,7 +24,7 @@ int main(){
 	postdata[0] = 0;
 	char cbuf[2];
 	cbuf[1] = 0;
-	while(1){
+	while(1) {
 		fread(cbuf, 1, 1, stdin);
 		if(feof(stdin)) break;
 		char* tmp = postdata;
@@ -36,6 +37,11 @@ int main(){
 	printf("Content-Type: text/html\r\n");
 	printf("\r\n");
 	rv_print_page();
+	rv_logged_in();
+	rv_load_query('Q');
+	rv_free_query();
+	rv_load_query('P');
 	rv_free_query();
 	rv_close_db();
+	rv_free_auth();
 }

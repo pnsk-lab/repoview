@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-int main(){
+int main() {
 #if defined(USE_SQLITE)
 	printf("db/sqlite.o");
 #elif defined(USE_GDBM) || defined(USE_NDBM)

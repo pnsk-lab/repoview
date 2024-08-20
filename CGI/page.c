@@ -14,18 +14,16 @@ char* buffer;
 
 void render_page(void);
 
-void add_data(char** data, const char* txt){
+void add_data(char** data, const char* txt) {
 	char* tmp = *data;
 	*data = rv_strcat(tmp, txt);
 	free(tmp);
 }
 
-void rv_process_page(void){
+void rv_process_page(void) {
 	buffer = malloc(1);
 	buffer[0] = 0;
 	render_page();
 }
 
-void rv_print_page(void){
-	printf("%s\n", buffer);
-}
+void rv_print_page(void) { printf("%s\n", buffer); }

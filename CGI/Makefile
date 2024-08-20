@@ -5,7 +5,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = main.o sanity.o version.o util.o query.o page.o $(EXTOBJS)
+OBJS = main.o sanity.o version.o util.o query.o page.o sha512.o $(EXTOBJS)
 
 all: repoview.cgi
 

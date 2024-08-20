@@ -4,6 +4,7 @@
 
 #include "rv_util.h"
 #include "rv_version.h"
+#include "rv_auth.h"
 #include "rv_db.h"
 
 #include "../../config.h"
@@ -19,16 +20,16 @@ char* title = NULL;
 char* desc = NULL;
 char* page = NULL;
 
-void render_page(void){
+void render_page(void) {
 	rv_load_query('Q');
 	char* query = rv_get_query("page");
 	if(query == NULL) query = "welcome";
 
-	if(strcmp(query, "welcome") == 0){
+	if(strcmp(query, "welcome") == 0) {
 		title = rv_strdup("Welcome");
 		desc = rv_strdup("Welcome to " INSTANCE_NAME ".");
 		page = rv_strcat3("Welcome to " INSTANCE_NAME ".<br>This instance is running RepoView version ", rv_get_version(), ".");
-	}else if(strcmp(query, "login") == 0){
+	} else if(strcmp(query, "login") == 0) {
 		title = rv_strdup("Login");
 		desc = rv_strdup("You can log in to your account here.");
 		page = rv_strdup("");
@@ -52,16 +53,16 @@ void render_page(void){
 		add_data(&page, "	</table>\n");
 		add_data(&page, "	<input type=\"submit\" value=\"Login\">\n");
 		add_data(&page, "</form>\n");
-	}else if(strcmp(query, "sendlogin") == 0){
+	} else if(strcmp(query, "sendlogin") == 0) {
 		title = rv_strdup("Login Result");
 		page = rv_strdup("");
 
 		rv_load_query('P');
-		if(rv_get_query("username") == NULL || rv_get_query("password") == NULL){
+		if(rv_get_query("username") == NULL || rv_get_query("password") == NULL) {
 			add_data(&page, "Invalid form\n");
-		}else{
-			if(rv_has_user(rv_get_query("username"))){
-			}else{
+		} else {
+			if(rv_has_user(rv_get_query("username"))) {
+			} else {
 				add_data(&page, "User does not exist");
 			}
 		}
@@ -76,22 +77,22 @@ void render_page(void){
 	free(title);
 }
 
-char* escape(const char* str){
+char* escape(const char* str) {
 	char* r = malloc(1);
 	r[0] = 0;
 	char cbuf[2];
 	cbuf[1] = 0;
 	int i;
-	for(i = 0; str[i] != 0; i++){
-		if(str[i] == '<'){
+	for(i = 0; str[i] != 0; i++) {
+		if(str[i] == '<') {
 			char* tmp = r;
 			r = rv_strcat(tmp, "&lt;");
 			free(tmp);
-		}else if(str[i] == '>'){
+		} else if(str[i] == '>') {
 			char* tmp = r;
 			r = rv_strcat(tmp, "&gt;");
 			free(tmp);
-		}else{
+		} else {
 			cbuf[0] = str[i];
 			char* tmp = r;
 			r = rv_strcat(tmp, cbuf);
@@ -101,7 +102,7 @@ char* escape(const char* str){
 	return r;
 }
 
-void render_stuff(void){
+void render_stuff(void) {
 	char* escaped;
 	add_data(&buffer, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n");
 	add_data(&buffer, "<html>\n");

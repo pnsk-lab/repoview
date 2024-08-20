@@ -18,30 +18,30 @@ struct query_entry** qentries;
 struct query_entry** query;
 struct query_entry** postquery;
 
-void rv_save_query(char c){
-	if(c == 'Q'){
+void rv_save_query(char c) {
+	if(c == 'Q') {
 		query = qentries;
-	}else if(c == 'P'){
+	} else if(c == 'P') {
 		postquery = qentries;
 	}
 }
 
-void rv_load_query(char c){
-	if(c == 'Q'){
+void rv_load_query(char c) {
+	if(c == 'Q') {
 		qentries = query;
-	}else if(c == 'P'){
+	} else if(c == 'P') {
 		qentries = postquery;
 	}
 }
 
-void rv_parse_query(const char* oldquery){
+void rv_parse_query(const char* oldquery) {
 	char* query = rv_strdup(oldquery);
 	int i;
 	int incr = 0;
 	qentries = malloc(sizeof(*qentries));
 	qentries[0] = NULL;
-	for(i = 0;; i++){
-		if(query[i] == '&' || query[i] == 0){
+	for(i = 0;; i++) {
+		if(query[i] == '&' || query[i] == 0) {
 			char oldc = query[i];
 			query[i] = 0;
 
@@ -49,8 +49,8 @@ void rv_parse_query(const char* oldquery){
 			char* value = "";
 
 			int j;
-			for(j = 0; key[j] != 0; j++){
-				if(key[j] == '='){
+			for(j = 0; key[j] != 0; j++) {
+				if(key[j] == '=') {
 					key[j] = 0;
 					value = key + j + 1;
 					break;
@@ -62,9 +62,10 @@ void rv_parse_query(const char* oldquery){
 			entry->value = rv_url_decode(value);
 
 			struct query_entry** old_entries = qentries;
-			for(j = 0; old_entries[j] != NULL; j++);
+			for(j = 0; old_entries[j] != NULL; j++)
+				;
 			qentries = malloc(sizeof(*qentries) * (j + 2));
-			for(j = 0; old_entries[j] != NULL; j++){
+			for(j = 0; old_entries[j] != NULL; j++) {
 				qentries[j] = old_entries[j];
 			}
 			qentries[j] = entry;
@@ -78,9 +79,9 @@ void rv_parse_query(const char* oldquery){
 	free(query);
 }
 
-void rv_free_query(void){
+void rv_free_query(void) {
 	int i;
-	for(i = 0; qentries[i] != NULL; i++){
+	for(i = 0; qentries[i] != NULL; i++) {
 		free(qentries[i]->key);
 		free(qentries[i]->value);
 		free(qentries[i]);
@@ -88,10 +89,10 @@ void rv_free_query(void){
 	free(qentries);
 }
 
-char* rv_get_query(const char* key){
+char* rv_get_query(const char* key) {
 	int i;
-	for(i = 0; qentries[i] != NULL; i++){
-		if(strcmp(qentries[i]->key, key) == 0){
+	for(i = 0; qentries[i] != NULL; i++) {
+		if(strcmp(qentries[i]->key, key) == 0) {
 			return qentries[i]->value;
 		}
 	}

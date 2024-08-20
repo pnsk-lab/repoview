@@ -3,4 +3,4 @@
 CC = cc
 CFLAGS = -std=c99
 LDFLAGS =
-LIBS =
+LIBS = -lcrypto
