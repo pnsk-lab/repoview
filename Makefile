@@ -3,7 +3,7 @@
 PWD = `pwd`
 PLATFORM = generic
 
-FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) EXTOBJS="`./objs`" EXTLIBS="`./libs`"
+FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) EXTOBJS="`./objs`" EXTLIBS="`./libs`" EXTCFLAGS=""
 
 .PHONY: all clean format ./CGI
 
@@ -24,7 +24,7 @@ check:: check.c config.h
 
 clean:
 	$(MAKE) -C ./CGI clean $(FLAGS)
-	rm -f objs libs check
+	rm -f objs libs check cflags
 
 format:
 	clang-format --verbose -i `find . -name "*.c" -or -name "*.h"`

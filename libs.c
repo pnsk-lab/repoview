@@ -13,12 +13,6 @@ int main() {
 	printf(" ");
 #if defined(USE_GRAPHICSMAGICK)
 	printf("-lGraphicsMagickWand");
-#elif defined(USE_IMAGEMAGICK)
-#ifdef __NetBSD__
-	printf("-lMagickWand-7.Q16HDRI");
-#else
-	printf("-lMagickWand-7");
-#endif
 #endif
 	printf("\n");
 	return 0;

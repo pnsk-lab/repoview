@@ -13,7 +13,7 @@ repoview.cgi: $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) $(EXTLIBS)
 
 .c.o:
-	$(CC) -I $(PWD)/CGI $(CFLAGS) -c -o $@ $<
+	$(CC) $(EXTCFLAGS) -I $(PWD)/CGI $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -f *.cgi *.o */*.o
