@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 char* rv_construct_repouser(const char* reponame, const char* username) {
 	char cbuf[2];
@@ -209,7 +210,7 @@ bool rv_get_list(const char* repouser, const char* path, void (*handler)(const c
 				char oldc = d[i];
 				d[i] = 0;
 				count++;
-				if(count > 1 && strlen(d + incr + 1) > 0 && d[incr] != 0) {
+				if(count > 1 && d[incr] != 0 && strlen(d + incr + 1) > 0) {
 					char* pathname = d + incr + 1;
 					if(phase == 0 && pathname[strlen(pathname) - 1] == '/') {
 						handler(d + incr + 1);
@@ -226,6 +227,8 @@ bool rv_get_list(const char* repouser, const char* path, void (*handler)(const c
 			}
 		}
 		phase++;
+		incr = 0;
+		count = 0;
 		if(phase == 1) goto repeat;
 		free(d);
 	}
@@ -234,6 +237,7 @@ bool rv_get_list(const char* repouser, const char* path, void (*handler)(const c
 }
 
 char* rv_read_file(const char* repouser, char* path) {
+	if(rv_get_filesize(repouser, path) > 1024 * 128) return NULL;
 	char* svnpath = rv_strcat3(SVN_ROOT, "/", repouser);
 	int pipes[2];
 	pipe(pipes);
@@ -246,22 +250,31 @@ char* rv_read_file(const char* repouser, char* path) {
 		_exit(0);
 	} else {
 		close(pipes[1]);
-		char cbuf[2];
-		cbuf[1] = 0;
-		char* d = malloc(1);
-		d[0] = 0;
+		char cbuf[1024];
+		char* d = malloc(1024 * 128);
+		int incr = 0;
+		bool bin = false;
 		while(1) {
-			int n = read(pipes[0], cbuf, 1);
+			int n = read(pipes[0], cbuf, 1024);
+			if(cbuf[0] == 0) {
+				bin = true;
+				kill(pid, SIGKILL);
+				break;
+			}
 			if(n == 0) break;
-			char* tmp = d;
-			d = rv_strcat(tmp, cbuf);
-			free(tmp);
+			memcpy(d + incr, cbuf, n);
+			d[incr + n] = 0;
+			incr += n;
 		}
 		int status;
 		waitpid(pid, &status, 0);
 		if(WEXITSTATUS(status) != 0) {
 			free(d);
 			free(svnpath);
+			return NULL;
+		}
+		if(bin) {
+			free(d);
 			return NULL;
 		}
 		return d;

@@ -116,6 +116,50 @@ void list_files(const char* pathname) {
 		add_data(&nav, "<li><a href=\"#filelist\">File List</a></li>\n");
 		add_data(&page, "<h2 id=\"filelist\">File List</h2>\n");
 		add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Name</th><th>Size</th></tr>\n");
+		char* path = rv_get_query("path");
+		if(path == NULL) path = "/";
+		if(strcmp(path, "/") != 0) {
+			char* query = rv_strdup("?page=repo&reponame=");
+			char* esc;
+			esc = url_escape(rv_get_query("reponame"));
+			add_data(&query, esc);
+			free(esc);
+			add_data(&query, "&username=");
+			esc = url_escape(user);
+			add_data(&query, esc);
+			free(esc);
+			add_data(&query, "&path=");
+
+			char* urlpath = rv_strdup(path);
+			int i;
+			int counter = 0;
+			int rep = urlpath[strlen(urlpath) - 1] == '/' ? 2 : 1;
+			for(i = strlen(urlpath) - 1; i >= 0; i--) {
+				char oldc = urlpath[i];
+				urlpath[i] = 0;
+				if(oldc == '/') {
+					counter++;
+					if(counter == 2) {
+						break;
+					}
+				}
+			}
+
+			if(strlen(urlpath) == 0) {
+				free(urlpath);
+				urlpath = rv_strdup("/");
+			}
+
+			esc = url_escape(urlpath);
+			add_data(&query, esc);
+			free(esc);
+
+			add_data(&page, "<tr><td><a href=\"");
+			add_data(&page, query);
+			add_data(&page, "\">../</a></td><td>&lt;DIR&gt;</td></tr>\n");
+			fcounter++;
+			free(query);
+		}
 	}
 	fcounter++;
 	add_data(&page, "<tr style=\"background-color: #");
@@ -380,10 +424,14 @@ void render_page(void) {
 					add_data(&page, "<h2 id=\"filecontent\">Content</h2>\n");
 					add_data(&page, "<pre class=\"codeblock\"><code>");
 					char* data = rv_read_file(repouser, path);
-					char* esc = html_escape_nl_to_br(data);
-					add_data(&page, esc);
-					free(esc);
-					free(data);
+					if(data != NULL) {
+						char* esc = html_escape_nl_to_br(data);
+						add_data(&page, esc);
+						free(esc);
+						free(data);
+					} else {
+						add_data(&page, "Cannot open the file.\n");
+					}
 					add_data(&page, "</code></pre>");
 				}
 			} else {
@@ -482,6 +530,8 @@ void render_stuff(void) {
 	add_data(&buffer, "pre {\n");
 	add_data(&buffer, "	background-color: #dddddd;\n");
 	add_data(&buffer, "	border: solid 2px #bbbbbb;\n");
+	add_data(&buffer, "	padding: 8px;\n");
+	add_data(&buffer, "	overflow: scroll;\n");
 	add_data(&buffer, "}\n");
 	add_data(&buffer, "#index {\n");
 	add_data(&buffer, "	list-style: none;\n");
