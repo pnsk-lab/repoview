@@ -20,6 +20,10 @@ int main() {
 #if defined(USE_ENSCRIPT)
 	printf("enscript.o");
 #endif
+	printf(" ");
+#if defined(USE_MYPAGE)
+	printf("avatar.o");
+#endif
 	printf("\n");
 	return 0;
 }
