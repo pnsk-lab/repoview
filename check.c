@@ -90,6 +90,19 @@ int check_files(void) {
 	return st;
 }
 
+int check_mypage(void) {
+	int st = 0;
+#if defined(USE_MYPAGE) && !defined(USE_GRAPHICSMAGICK)
+	fprintf(stderr, "USE_MYPAGE is defined, but USE_GRAPHICSMAGICK is not defined.\n");
+	st = 1;
+#endif
+#if defined(USE_MYPAGE) && !defined(USE_LIBPNG)
+	fprintf(stderr, "USE_MYPAGE is defined, but USE_LIBPNG is not defined.\n");
+	st = 1;
+#endif
+	return st;
+}
+
 int main() {
 	int st;
 	st = check_db();
@@ -99,6 +112,8 @@ int main() {
 	st = check_theme();
 	if(st != 0) goto fail;
 	st = check_files();
+	if(st != 0) goto fail;
+	st = check_mypage();
 	if(st != 0) goto fail;
 	printf("Config validation successful.\n");
 	return 0;

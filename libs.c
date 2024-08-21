@@ -14,6 +14,10 @@ int main() {
 #if defined(USE_GRAPHICSMAGICK)
 	printf("-lGraphicsMagickWand");
 #endif
+	printf(" ");
+#if defined(USE_LIBPNG)
+	printf("-lpng16");
+#endif
 	printf("\n");
 	return 0;
 }

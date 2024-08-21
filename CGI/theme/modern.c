@@ -348,6 +348,7 @@ void render_page(void) {
 			free(user);
 			user = NULL;
 		}
+#ifdef USE_MYPAGE
 	} else if(strcmp(query, "mypage") == 0) {
 		title = rv_strdup("My Page");
 		desc = rv_strdup("You manage your information here.");
@@ -356,6 +357,7 @@ void render_page(void) {
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=login\">log in</a>?\n");
 		}
+#endif
 	} else if(strcmp(query, "myrepo") == 0) {
 		title = rv_strdup("My Repositories");
 		desc = rv_strdup("You manage your repositories here.");
@@ -869,11 +871,13 @@ void render_stuff(void) {
 		add_data(&buffer, "			</div>\n");
 #endif
 	} else {
+#ifdef USE_MYPAGE
 		add_data(&buffer, "			<div>\n");
 		add_data(&buffer, "				<a href=\"");
 		add_data(&buffer, INSTANCE_ROOT);
 		add_data(&buffer, "/?page=mypage\">My Page</a>\n");
 		add_data(&buffer, "			</div>\n");
+#endif
 
 		add_data(&buffer, "			<div>\n");
 		add_data(&buffer, "				<a href=\"");
