@@ -9,6 +9,7 @@
 
 #include "../../config.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -75,6 +76,17 @@ void render_page(void) {
 				add_data(&page, "User does not exist.");
 			}
 		}
+	} else if(strcmp(query, "sendlogout") == 0) {
+		title = rv_strdup("Logout Result");
+		page = rv_strdup("");
+		if(user == NULL) {
+			add_data(&page, "You were not logged in.\n");
+		} else {
+			rv_logout();
+			add_data(&page, "Goodbye.\n");
+			free(user);
+			user = NULL;
+		}
 	} else if(strcmp(query, "mypage") == 0) {
 		title = rv_strdup("My Page");
 		desc = rv_strdup("You manage your information here.");
@@ -82,6 +94,22 @@ void render_page(void) {
 			page = rv_strdup("It looks like you are not logged in.<br>Want to <a href=\"");
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=login\">log in</a>?\n");
+		}
+	} else if(strcmp(query, "logout") == 0) {
+		title = rv_strdup("Logout");
+		desc = rv_strdup("You can log out from your account here.");
+		if(user == NULL) {
+			page = rv_strdup("It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else {
+			page = rv_strdup("");
+			add_data(&page, "Are you sure you want to log out?\n");
+			add_data(&page, "<form method=\"POST\" action=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=sendlogout\">\n");
+			add_data(&page, "	<input type=\"submit\" value=\"Yes\">\n");
+			add_data(&page, "</form>\n");
 		}
 	}
 
@@ -243,6 +271,12 @@ void render_stuff(void) {
 		add_data(&buffer, "				<a href=\"");
 		add_data(&buffer, INSTANCE_ROOT);
 		add_data(&buffer, "/?page=login\">Login</a>\n");
+		add_data(&buffer, "			</div>\n");
+	} else {
+		add_data(&buffer, "			<div>\n");
+		add_data(&buffer, "				<a href=\"");
+		add_data(&buffer, INSTANCE_ROOT);
+		add_data(&buffer, "/?page=logout\">Logout</a>\n");
 		add_data(&buffer, "			</div>\n");
 	}
 	if(user != NULL) {

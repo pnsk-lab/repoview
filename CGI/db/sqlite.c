@@ -135,8 +135,6 @@ int sqlget(void* param, int ncol, char** row, char** col) {
 
 char* rv_who_has_token(const char* token) {
 	char* err;
-	char cbuf[2];
-	cbuf[1] = 0;
 	count = 0;
 	char* query = rv_strcat3("select * from tokens where token = '", token, "'");
 	int ret;
@@ -152,11 +150,9 @@ char* rv_who_has_token(const char* token) {
 
 bool rv_has_token(const char* token) {
 	char* err;
-	char cbuf[2];
-	cbuf[1] = 0;
-	count = 0;
 	char* query = rv_strcat3("select * from tokens where token = '", token, "'");
 	int ret;
+	count = 0;
 	ret = sqlite3_exec(sql, query, sqlcount, NULL, &err);
 	free(query);
 	if(ret != SQLITE_OK) {
@@ -165,10 +161,19 @@ bool rv_has_token(const char* token) {
 	return count > 0;
 }
 
+void rv_remove_token(const char* token) {
+	char* err;
+	char* query = rv_strcat3("delete from tokens where token = '", token, "'");
+	int ret;
+	ret = sqlite3_exec(sql, query, sqlcount, NULL, &err);
+	free(query);
+	if(ret != SQLITE_OK) {
+		sqlite3_free(err);
+	}
+}
+
 bool rv_has_user(const char* username) {
 	char* err;
-	char cbuf[2];
-	cbuf[1] = 0;
 	count = 0;
 	char* esc = escape_sql(username);
 	char* query = rv_strcat3("select * from users where user = '", esc, "'");
