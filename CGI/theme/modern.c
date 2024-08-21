@@ -20,6 +20,7 @@ void render_stuff();
 char* title = NULL;
 char* desc = NULL;
 char* page = NULL;
+char* nav = NULL;
 extern char* user;
 
 void render_page(void) {
@@ -102,6 +103,26 @@ void render_page(void) {
 			page = rv_strdup("It looks like you are not logged in.<br>Want to <a href=\"");
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else {
+			nav = rv_strdup("");
+			add_data(&nav, "<li><a href=\"#createrepo\">Create a repository</a></li>\n");
+			add_data(&nav, "<li><a href=\"#repolist\">Repository List</a></li>\n");
+			page = rv_strdup("");
+			add_data(&page, "<h2 id=\"createrepo\">Create a repository</h2>\n");
+			add_data(&page, "<form action=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=createrepo\" method=\"POST\">\n");
+			add_data(&page, "	<table border=\"0\">\n");
+			add_data(&page, "		<tr>\n");
+			add_data(&page, "			<th>Repository name</th>\n");
+			add_data(&page, "			<td>\n");
+			add_data(&page, "				<input name=\"name\">\n");
+			add_data(&page, "			</td>\n");
+			add_data(&page, "			<td><input type=\"submit\" value=\"Create\"></td>\n");
+			add_data(&page, "		</tr>\n");
+			add_data(&page, "	</table>\n");
+			add_data(&page, "</form>\n");
+			add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
 		}
 	} else if(strcmp(query, "logout") == 0) {
 		title = rv_strdup("Logout");
@@ -124,10 +145,12 @@ void render_page(void) {
 	if(title == NULL) title = rv_strdup("");
 	if(desc == NULL) desc = rv_strdup("");
 	if(page == NULL) page = rv_strdup("");
+	if(nav == NULL) nav = rv_strdup("");
 	render_stuff();
 	free(page);
 	free(desc);
 	free(title);
+	free(nav);
 }
 
 char* escape(const char* str) {
@@ -324,6 +347,7 @@ void render_stuff(void) {
 	add_data(&buffer, "			<div id=\"pageindex\">\n");
 	add_data(&buffer, "				<h3>Page Menu</h3>\n");
 	add_data(&buffer, "				<ul>\n");
+	add_data(&buffer, nav);
 	add_data(&buffer, "				</ul>\n");
 	add_data(&buffer, "			</div>\n");
 	add_data(&buffer, "			<div id=\"pagecontent\">\n");

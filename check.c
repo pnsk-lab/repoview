@@ -83,6 +83,10 @@ int check_files(void) {
 	fprintf(stderr, "Apache authz file is not set.\n");
 	st = 1;
 #endif
+#ifndef REPO_USER_DELIM
+	fprintf(stderr, "Repo/User delimeter is not set.\n");
+	st = 1;
+#endif
 	return st;
 }
 
