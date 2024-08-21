@@ -73,6 +73,19 @@ int check_auth(void) {
 	return 0;
 }
 
+int check_files(void) {
+	int st = 0;
+#ifndef APACHE_PASSWD
+	fprintf(stderr, "Apache htpasswd file is not set.\n");
+	st = 1;
+#endif
+#ifndef APACHE_AUTHZ
+	fprintf(stderr, "Apache authz file is not set.\n");
+	st = 1;
+#endif
+	return st;
+}
+
 int main() {
 	int st;
 	st = check_db();
@@ -80,6 +93,8 @@ int main() {
 	st = check_auth();
 	if(st != 0) goto fail;
 	st = check_theme();
+	if(st != 0) goto fail;
+	st = check_files();
 	if(st != 0) goto fail;
 	printf("Config validation successful.\n");
 	return 0;
