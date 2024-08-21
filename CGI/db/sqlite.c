@@ -111,6 +111,22 @@ bool rv_check_password(const char* username, const char* password) {
 	return user.valid;
 }
 
+void rv_create_user(const char* username, const char* password) {
+	char* err;
+	int ret;
+	char* sha512 = rv_sha512(password);
+	char* esc = escape_sql(username);
+	char* tmp = rv_strcat3("insert into users values('", esc, "', '");
+	char* query = rv_strcat3(tmp, sha512, "')");
+	free(sha512);
+	free(tmp);
+	free(esc);
+	ret = sqlite3_exec(sql, query, NULL, NULL, &err);
+	if(ret != SQLITE_OK) {
+		sqlite3_free(err);
+	}
+}
+
 void rv_save_token(const char* username, const char* token) {
 	char* err;
 	int ret;

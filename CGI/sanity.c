@@ -49,16 +49,19 @@ void rv_check_sanity(void) {
 	bool svnlook = rv_find_executable("svnlook");
 	bool svnadmin = rv_find_executable("svnadmin");
 	bool htpasswd = rv_find_executable("htpasswd");
+	bool enscript = rv_find_executable("enscript");
 
 	if(!svnlook) sane = false;
 	if(!svnadmin) sane = false;
 	if(!htpasswd) sane = false;
+	if(!enscript) sane = false;
 
 	if(!sane) {
 		rv_error_http();
 		if(!svnlook) printf("svnlook not found\n");
 		if(!svnadmin) printf("svnadmin not found\n");
 		if(!htpasswd) printf("htpasswd not found\n");
+		if(!enscript) printf("enscript not found\n");
 		exit(1);
 	}
 }

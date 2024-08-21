@@ -10,6 +10,10 @@
 
 #include "../../config.h"
 
+#ifdef USE_ENSCRIPT
+#include "rv_enscript.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -180,7 +184,7 @@ void list_files(const char* pathname) {
 	add_data(&query, esc);
 	free(esc);
 	add_data(&query, "&path=");
-	char* urlpath = rv_strcat(path, pathname);
+	char* urlpath = rv_strcat3(path, "/", pathname);
 	esc = url_escape(urlpath);
 	add_data(&query, esc);
 	free(esc);
@@ -213,6 +217,77 @@ void render_page(void) {
 		title = rv_strdup("Welcome");
 		desc = rv_strdup("Welcome to " INSTANCE_NAME ".");
 		page = rv_strcat3("Welcome to " INSTANCE_NAME ".<br>This instance is running RepoView version ", rv_get_version(), ".");
+#ifdef ALLOW_SIGNUP
+	} else if(strcmp(query, "signup") == 0) {
+		title = rv_strdup("Signup");
+		desc = rv_strdup("You can create your account here.");
+		page = rv_strdup("");
+
+		add_data(&page, "<form action=\"");
+		add_data(&page, INSTANCE_ROOT);
+		add_data(&page, "/?page=sendsignup\" method=\"POST\">\n");
+		add_data(&page, "	<table border=\"0\">\n");
+		add_data(&page, "		<tr>\n");
+		add_data(&page, "			<th>Username</th>\n");
+		add_data(&page, "			<td>\n");
+		add_data(&page, "				<input name=\"username\">\n");
+		add_data(&page, "			</td>\n");
+		add_data(&page, "		</tr>\n");
+		add_data(&page, "		<tr>\n");
+		add_data(&page, "			<th>Password</th>\n");
+		add_data(&page, "			<td>\n");
+		add_data(&page, "				<input name=\"password\" type=\"password\">\n");
+		add_data(&page, "			</td>\n");
+		add_data(&page, "		</tr>\n");
+		add_data(&page, "	</table>\n");
+		char cbuf[2];
+		cbuf[0] = REPO_USER_DELIM;
+		cbuf[1] = 0;
+		add_data(&page, "Username cannot contain '<code>");
+		add_data(&page, cbuf);
+		add_data(&page, "</code>'.<br>");
+		add_data(&page, "	<input type=\"submit\" value=\"Signup\">\n");
+		add_data(&page, "</form>\n");
+	} else if(strcmp(query, "sendsignup") == 0) {
+		title = rv_strdup("Signup Result");
+		page = rv_strdup("");
+
+		rv_load_query('P');
+		if(user != NULL) {
+			page = rv_strdup("It looks like you are already logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=logout\">log out</a>?\n");
+		} else if(rv_get_query("username") == NULL || rv_get_query("password") == NULL) {
+			add_data(&page, "Invalid form.\n");
+		} else {
+			if(rv_has_user(rv_get_query("username"))) {
+				add_data(&page, "User already exists.");
+			} else {
+				if(user != NULL) free(user);
+				int i;
+				bool reject = false;
+				char* name = rv_get_query("username");
+				for(i = 0; name[i] != 0; i++) {
+					if(name[i] == REPO_USER_DELIM) {
+						char cbuf[2];
+						cbuf[0] = REPO_USER_DELIM;
+						cbuf[1] = 0;
+						add_data(&page, "Username cannot contain '<code>");
+						add_data(&page, cbuf);
+						add_data(&page, "</code>'.");
+						reject = true;
+						break;
+					}
+				}
+				if(!reject) {
+					rv_create_user(rv_get_query("username"), rv_get_query("password"));
+					user = rv_strdup(rv_get_query("username"));
+					add_data(&page, "Welcome.\n");
+					rv_save_login(rv_get_query("username"));
+				}
+			}
+		}
+#endif
 	} else if(strcmp(query, "login") == 0) {
 		title = rv_strdup("Login");
 		desc = rv_strdup("You can log in to your account here.");
@@ -245,7 +320,7 @@ void render_page(void) {
 		if(user != NULL) {
 			page = rv_strdup("It looks like you are already logged in.<br>Want to <a href=\"");
 			add_data(&page, INSTANCE_ROOT);
-			add_data(&page, "/?page=login\">log out</a>?\n");
+			add_data(&page, "/?page=logout\">log out</a>?\n");
 		} else if(rv_get_query("username") == NULL || rv_get_query("password") == NULL) {
 			add_data(&page, "Invalid form.\n");
 		} else {
@@ -423,6 +498,31 @@ void render_page(void) {
 					add_data(&nav, "<li><a href=\"#filecontent\">Content</a></li>");
 					add_data(&page, "<h2 id=\"filecontent\">Content</h2>\n");
 					add_data(&page, "<pre class=\"codeblock\"><code>");
+#ifdef USE_ENSCRIPT
+					int i;
+					char* ext = NULL;
+					for(i = strlen(path) - 1; i >= 0; i--) {
+						if(path[i] == '.') {
+							ext = path + i + 1;
+							break;
+						}
+					}
+					char* data = rv_enscript(repouser, path, ext);
+					if(data != NULL) {
+						add_data(&page, data);
+						free(data);
+					} else {
+						data = rv_read_file(repouser, path);
+						if(data != NULL) {
+							char* esc = html_escape_nl_to_br(data);
+							add_data(&page, esc);
+							free(esc);
+							free(data);
+						} else {
+							add_data(&page, "Cannot open the file.\n");
+						}
+					}
+#else
 					char* data = rv_read_file(repouser, path);
 					if(data != NULL) {
 						char* esc = html_escape_nl_to_br(data);
@@ -432,6 +532,7 @@ void render_page(void) {
 					} else {
 						add_data(&page, "Cannot open the file.\n");
 					}
+#endif
 					add_data(&page, "</code></pre>");
 				}
 			} else {
@@ -613,6 +714,13 @@ void render_stuff(void) {
 		add_data(&buffer, INSTANCE_ROOT);
 		add_data(&buffer, "/?page=login\">Login</a>\n");
 		add_data(&buffer, "			</div>\n");
+#ifdef ALLOW_SIGNUP
+		add_data(&buffer, "			<div>\n");
+		add_data(&buffer, "				<a href=\"");
+		add_data(&buffer, INSTANCE_ROOT);
+		add_data(&buffer, "/?page=signup\">Signup</a>\n");
+		add_data(&buffer, "			</div>\n");
+#endif
 	} else {
 		add_data(&buffer, "			<div>\n");
 		add_data(&buffer, "				<a href=\"");

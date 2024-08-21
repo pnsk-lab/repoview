@@ -16,6 +16,10 @@ int main() {
 #if defined(USE_COOKIE)
 	printf("auth/cookie.o");
 #endif
+	printf(" ");
+#if defined(USE_ENSCRIPT)
+	printf("enscript.o");
+#endif
 	printf("\n");
 	return 0;
 }

@@ -23,3 +23,5 @@ char* rv_who_has_token(const char* token) {}
 bool rv_has_token(const char* token) {}
 
 void rv_remove_token(const char* token) {}
+
+void rv_create_user(const char* username, const char* password) {}
