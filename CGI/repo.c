@@ -91,6 +91,9 @@ void rv_create_repo(const char* repouser) {
 	for(i = 0; user[i] != 0; i++) {
 		if(user[i] == REPO_USER_DELIM) {
 			user[i] = 0;
+			char* tmp = user;
+			user = rv_strdup(user + i + 1);
+			free(tmp);
 			break;
 		}
 	}
