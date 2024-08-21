@@ -75,13 +75,6 @@ char* rv_url_decode(const char* str) {
 	return r;
 }
 
-char* rv_construct_repouser(const char* reponame, const char* username) {
-	char cbuf[2];
-	cbuf[0] = REPO_USER_DELIM;
-	cbuf[1] = 0;
-	return rv_strcat3(reponame, cbuf, username);
-}
-
 char* rv_new_token(const char* username) {
 	const char tokenstr[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 	char* token = malloc(17);

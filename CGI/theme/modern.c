@@ -6,6 +6,7 @@
 #include "rv_version.h"
 #include "rv_auth.h"
 #include "rv_db.h"
+#include "rv_repo.h"
 
 #include "../../config.h"
 
@@ -21,7 +22,143 @@ char* title = NULL;
 char* desc = NULL;
 char* page = NULL;
 char* nav = NULL;
+char* grepouser;
 extern char* user;
+
+char* url_escape(const char* input) {
+	const char hex[] = "0123456789ABCDEF";
+	char* r = malloc(1);
+	r[0] = 0;
+	char cbuf[2];
+	cbuf[1] = 0;
+	int i;
+	for(i = 0; input[i] != 0; i++) {
+		if(input[i] == 0x20 || input[i] == 0x22 || input[i] == 0x25 || input[i] == 0x2d || input[i] == 0x2e || input[i] == 0x3c || input[i] == 0x3e || input[i] == 0x5c || input[i] == 0x5e || input[i] == 0x5f || input[i] == 0x60 || input[i] == 0x7b || input[i] == 0x7c || input[i] == 0x7d || input[i] == 0x7e || input[i] == 0x21 || input[i] == 0x23 || input[i] == 0x24 || input[i] == 0x26 || input[i] == 0x27 || input[i] == 0x28 || input[i] == 0x29 || input[i] == 0x2a || input[i] == 0x2b || input[i] == 0x2c || input[i] == 0x2f || input[i] == 0x3a || input[i] == 0x3b || input[i] == 0x3d || input[i] == 0x3f || input[i] == 0x40 || input[i] == 0x5b || input[i] == 0x5d) {
+			add_data(&r, "%");
+			cbuf[0] = hex[(input[i] >> 4) & 0xf];
+			add_data(&r, cbuf);
+			cbuf[0] = hex[input[i] & 0xf];
+			add_data(&r, cbuf);
+		} else {
+			cbuf[0] = input[i];
+			add_data(&r, cbuf);
+		}
+	}
+	return r;
+}
+
+char* html_escape(const char* input) {
+	char* r = malloc(1);
+	r[0] = 0;
+	char cbuf[2];
+	cbuf[1] = 0;
+	int i;
+	for(i = 0; input[i] != 0; i++) {
+		if(input[i] == '<') {
+			add_data(&r, "&lt;");
+		} else if(input[i] == '>') {
+			add_data(&r, "&gt;");
+		} else {
+			cbuf[0] = input[i];
+			add_data(&r, cbuf);
+		}
+	}
+	return r;
+}
+
+char* html_escape_nl_to_br(const char* input) {
+	char* r = malloc(1);
+	r[0] = 0;
+	char cbuf[2];
+	cbuf[1] = 0;
+	int i;
+	for(i = 0; input[i] != 0; i++) {
+		if(input[i] == '<') {
+			add_data(&r, "&lt;");
+		} else if(input[i] == '>') {
+			add_data(&r, "&gt;");
+		} else if(input[i] == '\n') {
+			add_data(&r, "<br>");
+		} else {
+			cbuf[0] = input[i];
+			add_data(&r, cbuf);
+		}
+	}
+	return r;
+}
+
+void list_repo(const char* name, const char* rev) {
+	char* showname = html_escape(name);
+	char* urluser = url_escape(user);
+	char* urlrepo = url_escape(name);
+	add_data(&page, "<tr>");
+	add_data(&page, "<td><a href=\"");
+	add_data(&page, INSTANCE_ROOT);
+	add_data(&page, "/?page=repo&reponame=");
+	add_data(&page, urlrepo);
+	add_data(&page, "&username=");
+	add_data(&page, urluser);
+	add_data(&page, "\">");
+	add_data(&page, showname);
+	add_data(&page, "</a></td>");
+	add_data(&page, "<td>");
+	add_data(&page, rev);
+	add_data(&page, "</td>");
+	add_data(&page, "</tr>");
+	free(showname);
+	free(urluser);
+	free(urlrepo);
+}
+
+int fcounter = 0;
+void list_files(const char* pathname) {
+	if(fcounter == 0) {
+		add_data(&nav, "<li><a href=\"#filelist\">File List</a></li>\n");
+		add_data(&page, "<h2 id=\"filelist\">File List</h2>\n");
+		add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Name</th><th>Size</th></tr>\n");
+	}
+	fcounter++;
+	add_data(&page, "<tr style=\"background-color: #");
+	if((fcounter % 2) == 0) {
+		add_data(&page, "D2E1C0");
+	} else {
+		add_data(&page, "FFFFFF");
+	}
+	char* path = rv_get_query("path");
+	if(path == NULL) path = "/";
+	char* query = rv_strdup("?page=repo&reponame=");
+	char* esc;
+	esc = url_escape(rv_get_query("reponame"));
+	add_data(&query, esc);
+	free(esc);
+	add_data(&query, "&username=");
+	esc = url_escape(user);
+	add_data(&query, esc);
+	free(esc);
+	add_data(&query, "&path=");
+	char* urlpath = rv_strcat(path, pathname);
+	esc = url_escape(urlpath);
+	add_data(&query, esc);
+	free(esc);
+	char* sz = malloc(128);
+	sprintf(sz, "%lld", rv_get_filesize(grepouser, urlpath));
+	add_data(&page, "\"><td><a href=\"");
+	add_data(&page, query);
+	add_data(&page, "\">");
+	add_data(&page, pathname);
+	add_data(&page, "</a></td>\n");
+	add_data(&page, "<td>\n");
+	if(strcmp(sz, "-1") != 0) {
+		add_data(&page, sz);
+	} else {
+		add_data(&page, "&lt;DIR&gt;");
+	}
+	add_data(&page, "</td>\n");
+	free(sz);
+	add_data(&page, "</tr>\n");
+	free(query);
+	free(urlpath);
+}
 
 void render_page(void) {
 	rv_load_query('Q');
@@ -61,7 +198,11 @@ void render_page(void) {
 		page = rv_strdup("");
 
 		rv_load_query('P');
-		if(rv_get_query("username") == NULL || rv_get_query("password") == NULL) {
+		if(user != NULL) {
+			page = rv_strdup("It looks like you are already logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log out</a>?\n");
+		} else if(rv_get_query("username") == NULL || rv_get_query("password") == NULL) {
 			add_data(&page, "Invalid form.\n");
 		} else {
 			if(rv_has_user(rv_get_query("username"))) {
@@ -104,6 +245,9 @@ void render_page(void) {
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=login\">log in</a>?\n");
 		} else {
+			char cbuf[2];
+			cbuf[0] = REPO_USER_DELIM;
+			cbuf[1] = 0;
 			nav = rv_strdup("");
 			add_data(&nav, "<li><a href=\"#createrepo\">Create a repository</a></li>\n");
 			add_data(&nav, "<li><a href=\"#repolist\">Repository List</a></li>\n");
@@ -121,8 +265,65 @@ void render_page(void) {
 			add_data(&page, "			<td><input type=\"submit\" value=\"Create\"></td>\n");
 			add_data(&page, "		</tr>\n");
 			add_data(&page, "	</table>\n");
+			add_data(&page, "Repository name cannot contain '<code>");
+			add_data(&page, cbuf);
+			add_data(&page, "</code>'.");
 			add_data(&page, "</form>\n");
 			add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
+			add_data(&page, "<table border=\"0\">\n");
+			add_data(&page, "<tr><th>Repository name</th><th>Revision</th></tr>\n");
+			rv_repo_list(user, list_repo);
+			add_data(&page, "</table>\n");
+		}
+	} else if(strcmp(query, "createrepo") == 0) {
+		title = rv_strdup("Creating Repository Result");
+		page = rv_strdup("");
+
+		rv_load_query('P');
+		if(user == NULL) {
+			page = rv_strdup("It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else if(rv_get_query("name") == NULL) {
+			add_data(&page, "Invalid form.\n");
+		} else {
+			int i;
+			bool reject = false;
+			char* name = rv_get_query("name");
+			for(i = 0; name[i] != 0; i++) {
+				if(name[i] == REPO_USER_DELIM) {
+					char cbuf[2];
+					cbuf[0] = REPO_USER_DELIM;
+					cbuf[1] = 0;
+					add_data(&page, "Repository name cannot contain '<code>");
+					add_data(&page, cbuf);
+					add_data(&page, "</code>'.");
+					reject = true;
+					break;
+				}
+			}
+			if(!reject) {
+				char* ru = rv_construct_repouser(name, user);
+				if(rv_repo_exists(ru)) {
+					add_data(&page, "Repository already exists.");
+				} else {
+					char* esc;
+					rv_create_repo(ru);
+					add_data(&page, "Repository has been created.<br>\n");
+					add_data(&page, "<a href=\"");
+					add_data(&page, INSTANCE_ROOT);
+					esc = url_escape(name);
+					add_data(&page, "/?page=repo&reponame=");
+					add_data(&page, esc);
+					free(esc);
+					esc = url_escape(user);
+					add_data(&page, "&username=");
+					add_data(&page, esc);
+					free(esc);
+					add_data(&page, "\">Go to the repository</a>.\n");
+				}
+				free(ru);
+			}
 		}
 	} else if(strcmp(query, "logout") == 0) {
 		title = rv_strdup("Logout");
@@ -139,6 +340,56 @@ void render_page(void) {
 			add_data(&page, "/?page=sendlogout\">\n");
 			add_data(&page, "	<input type=\"submit\" value=\"Yes\">\n");
 			add_data(&page, "</form>\n");
+		}
+	} else if(strcmp(query, "repo") == 0) {
+		title = rv_strdup("Repository");
+		desc = rv_strdup("");
+		page = rv_strdup("");
+		nav = rv_strdup("");
+		if(rv_get_query("username") == NULL || rv_get_query("reponame") == NULL) {
+			add_data(&page, "Required parameters not set.");
+		} else {
+			char* user = rv_get_query("username");
+			char* repo = rv_get_query("reponame");
+			char* repouser = rv_construct_repouser(repo, user);
+			grepouser = repouser;
+			if(rv_repo_exists(repouser)) {
+				char* showuser = html_escape(user);
+				char* showrepo = html_escape(repo);
+				char* showreadme = rv_get_readme(repouser);
+				desc = html_escape_nl_to_br(showreadme);
+				add_data(&title, " - ");
+				add_data(&title, showrepo);
+				add_data(&title, "/");
+				add_data(&title, showuser);
+				free(showuser);
+				free(showrepo);
+				free(showreadme);
+
+				int isdir;
+				char* path = rv_get_query("path");
+				if(path == NULL) path = "/";
+				fcounter = 0;
+				add_data(&page, "<table border=\"0\" style=\"width: 100%;\">");
+				if(!rv_get_list(repouser, path, list_files, &isdir)) {
+					add_data(&page, "<tr><td>Path not found.</td></tr>\n");
+				}
+				add_data(&page, "</table>");
+				if(isdir == 0) {
+					add_data(&nav, "<li><a href=\"#filecontent\">Content</a></li>");
+					add_data(&page, "<h2 id=\"filecontent\">Content</h2>\n");
+					add_data(&page, "<pre class=\"codeblock\"><code>");
+					char* data = rv_read_file(repouser, path);
+					char* esc = html_escape_nl_to_br(data);
+					add_data(&page, esc);
+					free(esc);
+					free(data);
+					add_data(&page, "</code></pre>");
+				}
+			} else {
+				add_data(&page, "Repository does not exist.\n");
+			}
+			free(repouser);
 		}
 	}
 
@@ -208,6 +459,9 @@ void render_stuff(void) {
 	add_data(&buffer, "	padding-right: 25px;\n");
 	add_data(&buffer, "	padding-top: 7px;\n");
 	add_data(&buffer, "}\n");
+	add_data(&buffer, "th,td {\n");
+	add_data(&buffer, "	padding: 2px;\n");
+	add_data(&buffer, "}\n");
 	add_data(&buffer, "body {\n");
 	add_data(&buffer, "	background-color: #1F4677;\n");
 	add_data(&buffer, "	width: 940px;\n");
@@ -225,6 +479,10 @@ void render_stuff(void) {
 	add_data(&buffer, "	font-size: 22px;\n");
 	add_data(&buffer, "	font-weight: bold;\n");
 	add_data(&buffer, "}\n");
+	add_data(&buffer, "pre {\n");
+	add_data(&buffer, "	background-color: #dddddd;\n");
+	add_data(&buffer, "	border: solid 2px #bbbbbb;\n");
+	add_data(&buffer, "}\n");
 	add_data(&buffer, "#index {\n");
 	add_data(&buffer, "	list-style: none;\n");
 	add_data(&buffer, "	line-height: normal;\n");
@@ -239,6 +497,9 @@ void render_stuff(void) {
 	add_data(&buffer, "}\n");
 	add_data(&buffer, "#descinside {\n");
 	add_data(&buffer, "	float: left;\n");
+	add_data(&buffer, "	width: 700px;\n");
+	add_data(&buffer, "	overflow-y: scroll;\n");
+	add_data(&buffer, "	max-height: 128px;\n");
 	add_data(&buffer, "}\n");
 	add_data(&buffer, "#logo {\n");
 	add_data(&buffer, "	float: right;\n");
@@ -247,7 +508,6 @@ void render_stuff(void) {
 	add_data(&buffer, "	background-color: #FFFFFF;\n");
 	add_data(&buffer, "	margin: -10px auto;\n");
 	add_data(&buffer, "	padding: 8px 24px 24px;\n");
-	add_data(&buffer, "	min-height: 128px;\n");
 	add_data(&buffer, "}\n");
 	add_data(&buffer, "#pageindex {\n");
 	add_data(&buffer, "	background-color: #FFFFFF;\n");
@@ -352,8 +612,8 @@ void render_stuff(void) {
 	add_data(&buffer, "			</div>\n");
 	add_data(&buffer, "			<div id=\"pagecontent\">\n");
 	add_data(&buffer, page);
-	add_data(&buffer, "				<div class=\"fixfloat\"></div>\n");
 	add_data(&buffer, "			</div>\n");
+	add_data(&buffer, "			<div class=\"fixfloat\"></div>\n");
 	add_data(&buffer, "		</div>\n");
 	add_data(&buffer, "		<div id=\"footer\">\n");
 	add_data(&buffer, "			<div id=\"gotop\">\n");
