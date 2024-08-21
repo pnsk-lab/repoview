@@ -78,7 +78,7 @@ char* escape_sql(const char* input) {
 		if(input[i] == '\'') {
 			cbuf[0] = input[i];
 			char* tmp = query;
-			query rv_strcat(tmp, cbuf);
+			query = rv_strcat(tmp, cbuf);
 			free(tmp);
 			cbuf[0] = input[i];
 			tmp = query;
