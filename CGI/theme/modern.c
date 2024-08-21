@@ -95,6 +95,14 @@ void render_page(void) {
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=login\">log in</a>?\n");
 		}
+	} else if(strcmp(query, "myrepo") == 0) {
+		title = rv_strdup("My Repositories");
+		desc = rv_strdup("You manage your repositories here.");
+		if(user == NULL) {
+			page = rv_strdup("It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
+		}
 	} else if(strcmp(query, "logout") == 0) {
 		title = rv_strdup("Logout");
 		desc = rv_strdup("You can log out from your account here.");
@@ -174,7 +182,7 @@ void render_stuff(void) {
 	add_data(&buffer, "	float: left;\n");
 	add_data(&buffer, "	margin: 0 0;\n");
 	add_data(&buffer, "	padding-left: 0;\n");
-	add_data(&buffer, "	padding-right: 20px;\n");
+	add_data(&buffer, "	padding-right: 25px;\n");
 	add_data(&buffer, "	padding-top: 7px;\n");
 	add_data(&buffer, "}\n");
 	add_data(&buffer, "body {\n");
@@ -273,6 +281,18 @@ void render_stuff(void) {
 		add_data(&buffer, "/?page=login\">Login</a>\n");
 		add_data(&buffer, "			</div>\n");
 	} else {
+		add_data(&buffer, "			<div>\n");
+		add_data(&buffer, "				<a href=\"");
+		add_data(&buffer, INSTANCE_ROOT);
+		add_data(&buffer, "/?page=mypage\">My Page</a>\n");
+		add_data(&buffer, "			</div>\n");
+
+		add_data(&buffer, "			<div>\n");
+		add_data(&buffer, "				<a href=\"");
+		add_data(&buffer, INSTANCE_ROOT);
+		add_data(&buffer, "/?page=myrepo\">My Repositories</a>\n");
+		add_data(&buffer, "			</div>\n");
+
 		add_data(&buffer, "			<div>\n");
 		add_data(&buffer, "				<a href=\"");
 		add_data(&buffer, INSTANCE_ROOT);
