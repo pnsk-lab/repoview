@@ -73,7 +73,11 @@ char* rv_logged_in(void) {
 	int i;
 	for(i = 0; cookie_entries[i] != NULL; i++) {
 		if(strcmp(cookie_entries[i]->key, "token") == 0) {
-			return rv_who_has_token(cookie_entries[i]->value);
+			char* who = rv_who_has_token(cookie_entries[i]->value);
+			if(who == NULL) {
+				printf("Set-Cookie: token=; HttpOnly; Expires=0; SameSite=Strict\r\n");
+			}
+			return who;
 			break;
 		}
 	}
@@ -82,7 +86,7 @@ char* rv_logged_in(void) {
 
 void rv_save_login(const char* username) {
 	char* token = rv_new_token(username);
-	printf("Set-Cookie: token=%s; HttpOnly\r\n", token);
+	printf("Set-Cookie: token=%s; HttpOnly; SameSite=Strict\r\n", token);
 	free(token);
 }
 

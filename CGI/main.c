@@ -40,7 +40,6 @@ int main() {
 	printf("Content-Type: text/html\r\n");
 	printf("\r\n");
 	rv_print_page();
-	rv_logged_in();
 	rv_load_query('Q');
 	rv_free_query();
 	rv_load_query('P');

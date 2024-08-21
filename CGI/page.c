@@ -4,6 +4,7 @@
 
 #include "rv_query.h"
 #include "rv_util.h"
+#include "rv_auth.h"
 
 #include "../config.h"
 
@@ -11,6 +12,7 @@
 #include <stdlib.h>
 
 char* buffer;
+char* user;
 
 void render_page(void);
 
@@ -23,6 +25,7 @@ void add_data(char** data, const char* txt) {
 void rv_process_page(void) {
 	buffer = malloc(1);
 	buffer[0] = 0;
+	user = rv_logged_in();
 	render_page();
 }
 

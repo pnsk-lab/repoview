@@ -19,6 +19,7 @@ void render_stuff();
 char* title = NULL;
 char* desc = NULL;
 char* page = NULL;
+extern char* user;
 
 void render_page(void) {
 	rv_load_query('Q');
@@ -63,6 +64,8 @@ void render_page(void) {
 		} else {
 			if(rv_has_user(rv_get_query("username"))) {
 				if(rv_check_password(rv_get_query("username"), rv_get_query("password"))) {
+					if(user != NULL) free(user);
+					user = rv_strdup(rv_get_query("username"));
 					add_data(&page, "Welcome back.\n");
 					rv_save_login(rv_get_query("username"));
 				} else {
@@ -71,6 +74,14 @@ void render_page(void) {
 			} else {
 				add_data(&page, "User does not exist.");
 			}
+		}
+	} else if(strcmp(query, "mypage") == 0) {
+		title = rv_strdup("My Page");
+		desc = rv_strdup("You manage your information here.");
+		if(user == NULL) {
+			page = rv_strdup("It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
 		}
 	}
 
@@ -109,7 +120,6 @@ char* escape(const char* str) {
 }
 
 void render_stuff(void) {
-	char* user = rv_logged_in();
 	char* escaped;
 	add_data(&buffer, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n");
 	add_data(&buffer, "<html>\n");
@@ -147,6 +157,9 @@ void render_stuff(void) {
 	add_data(&buffer, "}\n");
 	add_data(&buffer, "#nav {\n");
 	add_data(&buffer, "	background-color: white;\n");
+	add_data(&buffer, "	background-image: url('");
+	add_data(&buffer, INSTANCE_NAVBAR);
+	add_data(&buffer, "');\n");
 	add_data(&buffer, "	height: 44px;\n");
 	add_data(&buffer, "	padding: 8px;\n");
 	add_data(&buffer, "	padding-left: 32px;\n");
@@ -231,6 +244,13 @@ void render_stuff(void) {
 		add_data(&buffer, INSTANCE_ROOT);
 		add_data(&buffer, "/?page=login\">Login</a>\n");
 		add_data(&buffer, "			</div>\n");
+	}
+	if(user != NULL) {
+		add_data(&buffer, "<div style=\"float: right;font-size: 10px;padding-top: 36px;padding-right: 0;font-style: italic;\">You have logged in as <a href=\"");
+		add_data(&buffer, INSTANCE_ROOT);
+		add_data(&buffer, "/?page=mypage\">");
+		add_data(&buffer, user);
+		add_data(&buffer, "</a></div>");
 	}
 	add_data(&buffer, "		</div>\n");
 	add_data(&buffer, "		<div id=\"desc\">\n");

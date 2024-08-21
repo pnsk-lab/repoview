@@ -11,8 +11,6 @@ int main() {
 	printf(" ");
 #if defined(USE_MODERN)
 	printf("theme/modern.o");
-#elif defined(USE_OPTIMIZED)
-	printf("theme/optimized.o");
 #endif
 	printf(" ");
 #if defined(USE_COOKIE)
