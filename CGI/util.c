@@ -86,10 +86,14 @@ char* rv_new_token(const char* username) {
 	char* token = malloc(17);
 	token[16] = 0;
 	int i;
+	unsigned char uc;
+	FILE* f = fopen("/dev/urandom", "rb");
 regenerate:
 	for(i = 0; i < 16; i++) {
-		token[i] = tokenstr[rand() % strlen(tokenstr)];
+		fread(&uc, 1, 1, f);
+		token[i] = tokenstr[uc % strlen(tokenstr)];
 	}
+	fclose(f);
 	if(rv_has_token(token)) goto regenerate;
 	rv_save_token(username, token);
 	return token;
