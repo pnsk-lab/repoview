@@ -245,7 +245,7 @@ void render_page(void) {
 		cbuf[1] = 0;
 		add_data(&page, "Username cannot contain '<code>");
 		add_data(&page, cbuf);
-		add_data(&page, "</code>'.<br>");
+		add_data(&page, "</code>' and '<code>#</code>'.<br>");
 		add_data(&page, "	<input type=\"submit\" value=\"Signup\">\n");
 		add_data(&page, "</form>\n");
 	} else if(strcmp(query, "sendsignup") == 0) {
@@ -268,7 +268,7 @@ void render_page(void) {
 				bool reject = false;
 				char* name = rv_get_query("username");
 				for(i = 0; name[i] != 0; i++) {
-					if(name[i] == REPO_USER_DELIM) {
+					if(name[i] == REPO_USER_DELIM || name[i] == '#') {
 						char cbuf[2];
 						cbuf[0] = REPO_USER_DELIM;
 						cbuf[1] = 0;
@@ -386,7 +386,7 @@ void render_page(void) {
 			add_data(&page, "	</table>\n");
 			add_data(&page, "Repository name cannot contain '<code>");
 			add_data(&page, cbuf);
-			add_data(&page, "</code>'.");
+			add_data(&page, "</code>' and '<code>#</code>'.");
 			add_data(&page, "</form>\n");
 			add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
 			add_data(&page, "<table border=\"0\">\n");
@@ -410,7 +410,7 @@ void render_page(void) {
 			bool reject = false;
 			char* name = rv_get_query("name");
 			for(i = 0; name[i] != 0; i++) {
-				if(name[i] == REPO_USER_DELIM) {
+				if(name[i] == REPO_USER_DELIM || name[i] == '#') {
 					char cbuf[2];
 					cbuf[0] = REPO_USER_DELIM;
 					cbuf[1] = 0;

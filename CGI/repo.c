@@ -166,6 +166,58 @@ long long rv_get_filesize(const char* repouser, const char* path) {
 	}
 }
 
+void rv_remove_repo(const char* repouser) {
+	printf("");
+	char* svnpath = rv_strcat3(SVN_ROOT, "/", repouser);
+	pid_t pid = fork();
+	if(pid == 0) {
+		char* cmd[] = {"rm", "-rf", svnpath, NULL};
+		execvp("rm", cmd);
+		_exit(0);
+	} else {
+		waitpid(pid, 0, 0);
+	}
+	free(svnpath);
+
+	FILE* f = fopen(APACHE_AUTHZ, "r+");
+	lockf(fileno(f), F_LOCK, 0);
+
+	fseek(f, 0, SEEK_SET);
+	struct stat s;
+	stat(APACHE_AUTHZ, &s);
+	char* buffer = malloc(s.st_size + 1);
+	fread(buffer, 1, s.st_size, f);
+	buffer[s.st_size] = 0;
+
+	f = freopen(APACHE_AUTHZ, "w+", f);
+	lockf(fileno(f), F_LOCK, 0);
+	int incr = 0;
+	int i;
+	char* start = rv_strcat("#%START ", repouser);
+	bool discard = false;
+	for(i = 0;; i++) {
+		if(buffer[i] == '\n' || buffer[i] == 0) {
+			char oldc = buffer[i];
+			buffer[i] = 0;
+
+			char* line = buffer + incr;
+			if(strcmp(line, start) == 0) {
+				discard = true;
+			} else if(discard && strcmp(line, "#%END") == 0) {
+				discard = false;
+			} else if(!discard) {
+				fprintf(f, "%s\n", line);
+			}
+
+			incr = i + 1;
+			if(oldc == 0) break;
+		}
+	}
+
+	lockf(fileno(f), F_ULOCK, 0);
+	fclose(f);
+}
+
 bool rv_get_list(const char* repouser, const char* path, void (*handler)(const char* pathname), int* isdir) {
 	char* svnpath = rv_strcat3(SVN_ROOT, "/", repouser);
 	int pipes[2];
