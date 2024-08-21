@@ -97,8 +97,16 @@ void rv_create_repo(const char* repouser) {
 	char* path = rv_strcat3(SVN_ROOT, "/", repouser);
 	char* cmd[] = {"svnadmin", "create", path, NULL};
 	null_exec(cmd);
+
+	char* readme = rv_strcat(path, "/README.txt");
+	FILE* f = fopen(readme, "w");
+	fprintf(f, "This is the default README of the RepoView repository.\n");
+	fprintf(f, "You can change it from the repository manager.\n");
+	fclose(f);
+	free(readme);
+
 	free(path);
-	FILE* f = fopen(APACHE_AUTHZ, "r+");
+	f = fopen(APACHE_AUTHZ, "r+");
 	lockf(fileno(f), F_LOCK, 0);
 
 	fseek(f, 0, SEEK_END);

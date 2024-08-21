@@ -486,6 +486,7 @@ void render_page(void) {
 				free(showrepo);
 				free(showreadme);
 #ifdef WWW_SVN_ROOT
+				add_data(&nav, "<li><a href=\"#repoinfo\">Info</a></li>\n");
 				add_data(&page, "<h2 id=\"repoinfo\">Info</h2>\n");
 				add_data(&page, "<a href=\"");
 				add_data(&page, WWW_SVN_ROOT);
