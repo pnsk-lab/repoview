@@ -129,7 +129,7 @@ void list_files(const char* pathname) {
 			add_data(&query, esc);
 			free(esc);
 			add_data(&query, "&username=");
-			esc = url_escape(user);
+			esc = url_escape(rv_get_query("username"));
 			add_data(&query, esc);
 			free(esc);
 			add_data(&query, "&path=");
@@ -180,7 +180,7 @@ void list_files(const char* pathname) {
 	add_data(&query, esc);
 	free(esc);
 	add_data(&query, "&username=");
-	esc = url_escape(user);
+	esc = url_escape(rv_get_query("username"));
 	add_data(&query, esc);
 	free(esc);
 	add_data(&query, "&path=");
@@ -465,15 +465,16 @@ void render_page(void) {
 		desc = rv_strdup("");
 		page = rv_strdup("");
 		nav = rv_strdup("");
+		rv_load_query('Q');
 		if(rv_get_query("username") == NULL || rv_get_query("reponame") == NULL) {
 			add_data(&page, "Required parameters not set.");
 		} else {
-			char* user = rv_get_query("username");
+			char* ruser = rv_get_query("username");
 			char* repo = rv_get_query("reponame");
-			char* repouser = rv_construct_repouser(repo, user);
+			char* repouser = rv_construct_repouser(repo, ruser);
 			grepouser = repouser;
 			if(rv_repo_exists(repouser)) {
-				char* showuser = html_escape(user);
+				char* showuser = html_escape(ruser);
 				char* showrepo = html_escape(repo);
 				char* showreadme = rv_get_readme(repouser);
 				desc = html_escape_nl_to_br(showreadme);
@@ -484,17 +485,29 @@ void render_page(void) {
 				free(showuser);
 				free(showrepo);
 				free(showreadme);
+#ifdef WWW_SVN_ROOT
+				add_data(&page, "<h2 id=\"repoinfo\">Info</h2>\n");
+				add_data(&page, "<a href=\"");
+				add_data(&page, WWW_SVN_ROOT);
+				add_data(&page, "/");
+				char* escru = url_escape(repouser);
+				add_data(&page, escru);
+				free(escru);
+				add_data(&page, "\">Raw repository</a>");
+#endif
 
 				int isdir;
 				char* path = rv_get_query("path");
 				if(path == NULL) path = "/";
 				fcounter = 0;
 				add_data(&page, "<table border=\"0\" style=\"width: 100%;\">");
+				bool rej = false;
 				if(!rv_get_list(repouser, path, list_files, &isdir)) {
 					add_data(&page, "<tr><td>Path not found.</td></tr>\n");
+					rej = true;
 				}
 				add_data(&page, "</table>");
-				if(isdir == 0) {
+				if(isdir == 0 && !rej) {
 					add_data(&nav, "<li><a href=\"#filecontent\">Content</a></li>");
 					add_data(&page, "<h2 id=\"filecontent\">Content</h2>\n");
 					add_data(&page, "<pre class=\"codeblock\"><code>");
@@ -535,10 +548,142 @@ void render_page(void) {
 #endif
 					add_data(&page, "</code></pre>");
 				}
+				if(user != NULL && strcmp(user, ruser) == 0) {
+					char* esc;
+					add_data(&nav, "<li><a href=\"#managerepo\">Manage The Repository</a></li>\n");
+					add_data(&page, "<h2 id=\"managerepo\">Manage The Repository</h2>\n");
+					add_data(&page, "<form action=\"");
+					add_data(&page, INSTANCE_ROOT);
+					add_data(&page, "/?page=sendmanrepo&username=");
+					esc = url_escape(ruser);
+					add_data(&page, esc);
+					free(esc);
+					add_data(&page, "&reponame=");
+					esc = url_escape(ruser);
+					add_data(&page, esc);
+					free(esc);
+					add_data(&page, "\" method=\"POST\">\n");
+					add_data(&page, "<table border=\"0\" style=\"width: 100%;\">\n");
+					add_data(&page, "	<tr>\n");
+					add_data(&page, "		<th>README</th>\n");
+					add_data(&page, "		<td>\n");
+					add_data(&page, "			<textarea name=\"readme\" style=\"width: 100%;resize: none;height: 128px;\">\n");
+					char* readme = rv_get_readme(repouser);
+					esc = html_escape(readme);
+					add_data(&page, esc);
+					free(esc);
+					free(readme);
+					add_data(&page, "			</textarea>\n");
+					add_data(&page, "		</td>\n");
+					add_data(&page, "	</tr>\n");
+					add_data(&page, "</table>\n");
+					add_data(&page, "<input type=\"submit\" value=\"Send\">\n");
+					add_data(&page, "</form>\n");
+					add_data(&page, "<a href=\"");
+					add_data(&page, INSTANCE_ROOT);
+					add_data(&page, "/?page=deleterepo&username=");
+					esc = url_escape(ruser);
+					add_data(&page, esc);
+					free(esc);
+					add_data(&page, "&reponame=");
+					esc = url_escape(ruser);
+					add_data(&page, esc);
+					free(esc);
+					add_data(&page, "\">\n");
+					add_data(&page, "Delete repository\n");
+					add_data(&page, "</a>\n");
+				}
 			} else {
 				add_data(&page, "Repository does not exist.\n");
 			}
 			free(repouser);
+		}
+	} else if(strcmp(query, "deleterepo") == 0) {
+		title = rv_strdup("Delete The Repository");
+		page = rv_strdup("");
+
+		rv_load_query('Q');
+		if(user == NULL) {
+			add_data(&page, "It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else if(rv_get_query("username") == NULL || rv_get_query("reponame") == NULL) {
+			add_data(&page, "Invalid Form.\n");
+		} else {
+			char* esc;
+			add_data(&page, "Are you sure you want to delete the repository?\n");
+			add_data(&page, "<form method=\"POST\" action=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=senddeleterepo&username=");
+			esc = url_escape(rv_get_query("username"));
+			add_data(&page, esc);
+			free(esc);
+			add_data(&page, "&reponame=");
+			esc = url_escape(rv_get_query("reponame"));
+			add_data(&page, esc);
+			free(esc);
+			add_data(&page, "\">");
+			add_data(&page, "	<input type=\"submit\" value=\"Yes\">\n");
+			add_data(&page, "</form>\n");
+		}
+	} else if(strcmp(query, "senddeleterepo") == 0) {
+		title = rv_strdup("Deleting Repository Result");
+		page = rv_strdup("");
+
+		rv_load_query('Q');
+		if(user == NULL) {
+			add_data(&page, "It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else if(rv_get_query("username") == NULL || rv_get_query("reponame") == NULL) {
+			add_data(&page, "Invalid Form.\n");
+		} else if(strcmp(rv_get_query("username"), user) != 0) {
+			add_data(&page, "You are not the owner of the repository.\n");
+		} else {
+			char* repouser = rv_construct_repouser(rv_get_query("reponame"), rv_get_query("username"));
+			if(rv_repo_exists(repouser)) {
+				rv_remove_repo(repouser);
+				add_data(&page, "Deleted the repository successfully.<br>\n");
+			} else {
+				add_data(&page, "Repository does not exist.<br>\n");
+			}
+		}
+	} else if(strcmp(query, "sendmanrepo") == 0) {
+		title = rv_strdup("Modifying Repository Result");
+		page = rv_strdup("");
+
+		rv_load_query('Q');
+		if(user == NULL) {
+			add_data(&page, "It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else if(rv_get_query("username") == NULL || rv_get_query("reponame") == NULL) {
+			add_data(&page, "Invalid Form.\n");
+		} else if(strcmp(rv_get_query("username"), user) != 0) {
+			add_data(&page, "You are not the owner of the repository.\n");
+		} else {
+			char* esc;
+			rv_load_query('P');
+			char* readme = rv_get_query("readme");
+			if(readme != NULL) {
+				rv_load_query('Q');
+				char* name = rv_construct_repouser(rv_get_query("reponame"), rv_get_query("username"));
+				rv_set_readme(name, readme);
+				free(name);
+			}
+			rv_load_query('Q');
+			add_data(&page, "Modified the repository successfully.<br>\n");
+			add_data(&page, "<a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "?page=repo&username=");
+			esc = url_escape(rv_get_query("username"));
+			add_data(&page, esc);
+			free(esc);
+			add_data(&page, "&reponame=");
+			esc = url_escape(rv_get_query("reponame"));
+			add_data(&page, esc);
+			free(esc);
+			add_data(&page, "\">Go back to the repository</a>.\n");
 		}
 	}
 
@@ -547,6 +692,7 @@ void render_page(void) {
 	if(page == NULL) page = rv_strdup("");
 	if(nav == NULL) nav = rv_strdup("");
 	render_stuff();
+freeall:
 	free(page);
 	free(desc);
 	free(title);
@@ -785,6 +931,13 @@ void render_stuff(void) {
 	add_data(&buffer, "\n");
 	add_data(&buffer, "			</div>\n");
 	add_data(&buffer, "			<div class=\"fixfloat\"></div>\n");
+#ifdef INSTANCE_BANNERS
+	add_data(&buffer, "			<div id=\"banners\" style=\"clear: both;\">\n");
+	add_data(&buffer, INSTANCE_BANNERS);
+	add_data(&buffer, "			</div>\n");
+#else
+	add_data(&buffer, "			<div class=\"fixfloat\"></div>\n");
+#endif
 	add_data(&buffer, "		</div>\n");
 	add_data(&buffer, "	</body>\n");
 	add_data(&buffer, "</html>\n");

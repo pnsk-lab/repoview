@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 char* rv_strcat(const char* a, const char* b) {
 	char* str = malloc(strlen(a) + strlen(b) + 1);
@@ -65,6 +67,10 @@ char* rv_url_decode(const char* str) {
 			r = rv_strcat(tmp, cbuf);
 			free(tmp);
 			i += 2;
+		} else if(str[i] == '+') {
+			char* tmp = r;
+			r = rv_strcat(tmp, " ");
+			free(tmp);
 		} else {
 			cbuf[0] = str[i];
 			char* tmp = r;
@@ -87,4 +93,15 @@ regenerate:
 	if(rv_has_token(token)) goto regenerate;
 	rv_save_token(username, token);
 	return token;
+}
+
+void rv_add_auth(const char* username, const char* password) {
+	pid_t pid = fork();
+	if(pid == 0) {
+		char* cmd[] = {"htpasswd", "-b", APACHE_PASSWD, (char*)username, (char*)password, NULL};
+		execvp("htpasswd", cmd);
+		_exit(0);
+	} else {
+		waitpid(pid, 0, 0);
+	}
 }

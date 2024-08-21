@@ -14,5 +14,6 @@ bool rv_get_list(const char* repouser, const char* path, void (*handler)(const c
 char* rv_read_file(const char* repouser, char* path);
 long long rv_get_filesize(const char* repouser, const char* path);
 void rv_remove_repo(const char* repouser);
+void rv_set_readme(const char* repouser, const char* readme);
 
 #endif

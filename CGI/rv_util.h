@@ -16,5 +16,6 @@ char* rv_url_decode(const char* str);
 void rv_error_http(void);
 char* rv_new_token(const char* username);
 char* rv_construct_repouser(const char* reponame, const char* username);
+void rv_add_auth(const char* username, const char* password);
 
 #endif

@@ -104,8 +104,9 @@ void rv_create_repo(const char* repouser) {
 	fseek(f, 0, SEEK_END);
 
 	fprintf(f, "#%%START %s\n", repouser);
+	fprintf(f, "[%s:/]\n", repouser);
 	fprintf(f, "* = r\n");
-	fprintf(f, "%s = r\n", user);
+	fprintf(f, "%s = rw\n", user);
 	fprintf(f, "#%%END\n");
 
 	lockf(fileno(f), F_ULOCK, 0);
@@ -205,6 +206,7 @@ void rv_remove_repo(const char* repouser) {
 				discard = true;
 			} else if(discard && strcmp(line, "#%END") == 0) {
 				discard = false;
+			} else if(strcmp(line, "") == 0) {
 			} else if(!discard) {
 				fprintf(f, "%s\n", line);
 			}
@@ -216,6 +218,18 @@ void rv_remove_repo(const char* repouser) {
 
 	lockf(fileno(f), F_ULOCK, 0);
 	fclose(f);
+}
+
+void rv_set_readme(const char* repouser, const char* readme) {
+	char* svnpath = rv_strcat3(SVN_ROOT, "/", repouser);
+	char* path = rv_strcat(svnpath, "/README.txt");
+	FILE* f = fopen(path, "w");
+	if(f != NULL) {
+		fwrite(readme, 1, strlen(readme), f);
+		fclose(f);
+	}
+	free(path);
+	free(svnpath);
 }
 
 bool rv_get_list(const char* repouser, const char* path, void (*handler)(const char* pathname), int* isdir) {

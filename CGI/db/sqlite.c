@@ -125,6 +125,7 @@ void rv_create_user(const char* username, const char* password) {
 	if(ret != SQLITE_OK) {
 		sqlite3_free(err);
 	}
+	rv_add_auth(username, password);
 }
 
 void rv_save_token(const char* username, const char* token) {

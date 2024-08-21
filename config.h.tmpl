@@ -8,25 +8,28 @@
 #define __CONFIG_H__
 
 /* Your instance name. */
-#define INSTANCE_NAME	"Unnamed"
+#define INSTANCE_NAME		"Unnamed"
 
 /* Admin name/email. */
-#define INSTANCE_ADMIN	"John Doe <john.doe@example.com>"
+#define INSTANCE_ADMIN		"John Doe <john.doe@example.com>"
 
 /* Instance Root. */
-#define INSTANCE_ROOT	"/cgi-bin"
+#define INSTANCE_ROOT		"/cgi-bin"
 
 /* Instance Logo. */
-#define INSTANCE_LOGO	"/logo.png"
+#define INSTANCE_LOGO		"/logo.png"
 
 /* Image to be put in the navbar, for the modern theme. 940x60 should be good. */
-#define INSTANCE_NAVBAR	"/paper.png"
+#define INSTANCE_NAVBAR		"/paper.png"
 
 /* Navbar repeat, for the modern theme. */
-#define INSTANCE_REPEAT	"resize-x"
+#define INSTANCE_REPEAT		"resize-x"
+
+/* Banners, for the modern theme.. */
+#define INSTANCE_BANNERS	"<img src=\"http://netbsd.org/images/logos/pnetbsd.gif\" width=\"88px\" height=\"31px\">"
 
 /* Repository/User delimeter. This character will be unusable in the username/repository name. */
-#define REPO_USER_DELIM '$'
+#define REPO_USER_DELIM		'-'
 
 /* Theme. */
 #define USE_MODERN
@@ -49,16 +52,19 @@
 #undef USE_PATH
 
 /* SVN filesystem root. */
-#define SVN_ROOT "/www/svn"
+#define SVN_ROOT 		"/www/svn"
 
 /* Database root. */
-#define DB_ROOT "/www/db"
+#define DB_ROOT			"/www/db"
 
 /* Apache htpasswd file. */
-#define APACHE_PASSWD "/www/passwd"
+#define APACHE_PASSWD		"/www/passwd"
 
 /* Apache authz file. */
-#define APACHE_AUTHZ "/www/authz"
+#define APACHE_AUTHZ 		"/www/authz"
+
+/* Subversion root on the HTTP. */
+#define WWW_SVN_ROOT		"/svn/"
 
 #endif
 
