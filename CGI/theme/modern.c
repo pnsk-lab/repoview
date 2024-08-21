@@ -560,7 +560,7 @@ void render_page(void) {
 					add_data(&page, esc);
 					free(esc);
 					add_data(&page, "&reponame=");
-					esc = url_escape(ruser);
+					esc = url_escape(repo);
 					add_data(&page, esc);
 					free(esc);
 					add_data(&page, "\" method=\"POST\">\n");
