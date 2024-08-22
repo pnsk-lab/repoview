@@ -481,9 +481,9 @@ void render_page(void) {
 				char* showreadme = rv_get_readme(repouser);
 				desc = html_escape_nl_to_br(showreadme);
 				add_data(&title, " - ");
-				add_data(&title, showrepo);
-				add_data(&title, "/");
 				add_data(&title, showuser);
+				add_data(&title, "/");
+				add_data(&title, showrepo);
 				free(showuser);
 				free(showrepo);
 				free(showreadme);
