@@ -421,7 +421,6 @@ void render_page(void) {
 			add_data(&page, "/");
 			add_data(&page, user);
 			add_data(&page, ".png");
-			add_data(&page, nocache);
 			add_data(&page, "\" alt=\"Your Icon\" width=\"50%\"></a><br>");
 			add_data(&page, "	<input type=\"file\" name=\"pfp\">\n");
 			add_data(&page, "	<h2 id=\"bio\">Bio</h2>\n");
