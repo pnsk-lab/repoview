@@ -105,7 +105,7 @@ int main() {
 						if(feof(stdin)) break;
 					}
 					if(multipart != NULL) {
-						rv_parse_multipart(multipart, bd, length);
+						rv_parse_multipart((unsigned char*)multipart, bd, length);
 						free(multipart);
 					}
 				}
