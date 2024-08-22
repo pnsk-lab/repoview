@@ -623,7 +623,19 @@ void render_page(void) {
 				char* showreadme = rv_get_readme(repouser);
 				desc = html_escape_nl_to_br(showreadme);
 				add_data(&title, " - ");
+#ifdef USE_MYPAGE
+				add_data(&title, "<a href=\"");
+				add_data(&title, INSTANCE_ROOT);
+				add_data(&title, "/?page=person&username=");
+				char* esc = url_escape(ruser);
+				add_data(&title, esc);
+				free(esc);
+				add_data(&title, "\">");
+#endif
 				add_data(&title, showuser);
+#ifdef USE_MYPAGE
+				add_data(&title, "</a>");
+#endif
 				add_data(&title, "/");
 				add_data(&title, showrepo);
 				free(showuser);
