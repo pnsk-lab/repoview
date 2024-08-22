@@ -794,12 +794,14 @@ void render_page(void) {
 	} else if(strcmp(query, "person") == 0) {
 		title = rv_strdup("Person");
 		page = rv_strdup("");
+		nav = rv_strdup("");
 
 		rv_load_query('Q');
 		if(rv_get_query("username") == NULL) {
 			add_data(&page, "Invalid Form.\n");
 		} else {
 			if(rv_has_user(rv_get_query("username"))) {
+				add_data(&title, "<li><a href=\"#repolist\">Repository List</a></li>");
 				add_data(&title, " - ");
 				add_data(&title, rv_get_query("username"));
 				char* path = rv_strcat3(BIO_ROOT, "/", rv_get_query("username"));
