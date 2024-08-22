@@ -113,6 +113,14 @@ int check_avatar(void) {
 	fprintf(stderr, "USE_AVATAR is defined, but USE_LIBPNG is not defined.\n");
 	st = 1;
 #endif
+#if defined(USE_AVATAR) && !defined(WWW_AVATAR_ROOT)
+	fprintf(stderr, "USE_AVATAR is defined, but WWW_AVATAR_ROOT is not defined.\n");
+	st = 1;
+#endif
+#if defined(USE_AVATAR) && !defined(AVATAR_ROOT)
+	fprintf(stderr, "USE_AVATAR is defined, but AVATAR_ROOT is not defined.\n");
+	st = 1;
+#endif
 	return st;
 }
 
