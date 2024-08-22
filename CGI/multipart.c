@@ -53,7 +53,7 @@ void rv_parse_multipart(unsigned char* buffer, char* boundary, unsigned long lon
 			} else if(strcmp(b, line) == 0 || strcmp(eb, line) == 0) {
 				if(phase == 1) {
 					unsigned long long fend = i - strlen(line) - 2;
-					char* data = buffer + fstart;
+					char* data = (char*)buffer + fstart;
 					unsigned long long datalen = fend - fstart;
 					struct multipart_entry* entry = malloc(sizeof(*entry));
 					entry->length = datalen;

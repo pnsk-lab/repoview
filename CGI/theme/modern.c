@@ -47,6 +47,7 @@ bool invalid_char(char c) {
 	if(c >= 'a' && c <= 'z') return false;
 	if(c >= 'A' && c <= 'Z') return false;
 	if(c == '_' && c == '-' && c == '.') return false;
+	return true;
 }
 
 char* url_escape(const char* input) {
