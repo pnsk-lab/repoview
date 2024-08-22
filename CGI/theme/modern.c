@@ -796,13 +796,13 @@ void render_page(void) {
 
 					desc = html_escape_nl_to_br(buf);
 
-					char* tmp = rv_strcat3(WWW_AVATAR_ROOT, "/", rv_get_query("username"));
-					logopath = rv_strcat(tmp, ".png");
-					fprintf(stderr, "%s\n", logopath);
-					free(tmp);
-
 					fclose(f);
 				}
+
+				char* tmp = rv_strcat3(WWW_AVATAR_ROOT, "/", rv_get_query("username"));
+				logopath = rv_strcat(tmp, ".png");
+				free(tmp);
+
 				free(path);
 			} else {
 				add_data(&page, "User does not exist.\n");
