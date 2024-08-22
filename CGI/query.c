@@ -15,8 +15,8 @@ struct query_entry {
 
 struct query_entry** qentries;
 
-struct query_entry** query;
-struct query_entry** postquery;
+struct query_entry** query = NULL;
+struct query_entry** postquery = NULL;
 
 void rv_save_query(char c) {
 	if(c == 'Q') {
@@ -91,6 +91,7 @@ void rv_free_query(void) {
 
 char* rv_get_query(const char* key) {
 	int i;
+	if(qentries == NULL) return NULL;
 	for(i = 0; qentries[i] != NULL; i++) {
 		if(strcmp(qentries[i]->key, key) == 0) {
 			return qentries[i]->value;
