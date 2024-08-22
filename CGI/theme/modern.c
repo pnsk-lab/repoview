@@ -468,7 +468,7 @@ void render_page(void) {
 				fclose(f);
 				char* reason;
 				if(rv_resize_picture(path, outpath, &reason)) {
-					add_data(&page, "Uploaded the profile picture successfully.\n");
+					add_data(&page, "Uploaded the profile picture successfully.<br>\n");
 				} else {
 					add_data(&page, "Failed to upload the profile picture.<br><code>\n");
 					char* esc = html_escape(reason);
@@ -487,7 +487,7 @@ void render_page(void) {
 				fwrite(entry->data, 1, entry->length, f);
 				fclose(f);
 				free(path);
-				add_data(&page, "Uploaded the bio successfully.\n");
+				add_data(&page, "Uploaded the bio successfully.<br>\n");
 			}
 		}
 #endif
