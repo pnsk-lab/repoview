@@ -116,8 +116,14 @@ void list_repo(const char* name, const char* rev) {
 	char* showname = html_escape(name);
 	char* urluser = url_escape(user);
 	char* urlrepo = url_escape(name);
-	add_data(&page, "<tr>");
-	add_data(&page, "<td><a href=\"");
+	add_data(&page, "<tr style=\"background-color: #");
+	if((fcounter % 2) == 0) {
+		add_data(&page, "D2E1C0");
+	} else {
+		add_data(&page, "FFFFFF");
+	}
+	fcounter++;
+	add_data(&page, "\"><td><a href=\"");
 	add_data(&page, INSTANCE_ROOT);
 	add_data(&page, "/?page=repo&reponame=");
 	add_data(&page, urlrepo);
@@ -524,7 +530,8 @@ void render_page(void) {
 			add_data(&page, "</form>\n");
 			add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
 			add_data(&page, "<table border=\"0\">\n");
-			add_data(&page, "<tr><th>Repository name</th><th>Revision</th></tr>\n");
+			add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Repository name</th><th>Revision</th></tr>\n");
+			fcounter = 0;
 			rv_repo_list(user, list_repo);
 			add_data(&page, "</table>\n");
 		}
@@ -816,7 +823,8 @@ void render_page(void) {
 
 				add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
 				add_data(&page, "<table border=\"0\">\n");
-				add_data(&page, "<tr><th>Repository name</th><th>Revision</th></tr>\n");
+				add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Repository name</th><th>Revision</th></tr>\n");
+				fcoutner = 0;
 				rv_repo_list(rv_get_query("username"), list_repo);
 				add_data(&page, "</table>\n");
 			} else {
