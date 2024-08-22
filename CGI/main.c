@@ -52,7 +52,16 @@ int main() {
 				rv_error_http();
 				for(; type[i] != 0; i++) {
 					if(type[i] != ' ' && type[i] != '\t') {
-						printf("%s\n", type + i);
+						int j;
+						char* boundary = type + i;
+						for(j = 0; boundary[j] != 0; j++){
+							if(boundary[j] == '='){
+								boundary[j] = 0;
+								printf("%s\n%s\n", boundary, boundary + j + 1);
+								found = true;
+								break;
+							}
+						}
 						break;
 					}
 				}
