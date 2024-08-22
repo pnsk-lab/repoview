@@ -530,7 +530,7 @@ void render_page(void) {
 			add_data(&page, "</code>'.");
 			add_data(&page, "</form>\n");
 			add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
-			add_data(&page, "<table border=\"0\">\n");
+			add_data(&page, "<table border=\"0\" style=\"width: 100%;\">\n");
 			add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Repository name</th><th>Revision</th></tr>\n");
 			fcounter = 0;
 			rv_repo_list(user, list_repo);
@@ -823,7 +823,7 @@ void render_page(void) {
 				free(path);
 
 				add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
-				add_data(&page, "<table border=\"0\">\n");
+				add_data(&page, "<table border=\"0\" style=\"width: 100%;\">\n");
 				add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Repository name</th><th>Revision</th></tr>\n");
 				fcounter = 0;
 				instead_username = rv_get_query("username");
