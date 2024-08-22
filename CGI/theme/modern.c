@@ -239,6 +239,16 @@ void generate_avatar(void) {
 		}
 		free(path);
 	}
+	if(rv_get_query("username") != NULL) {
+		char* un = rv_get_query("username");
+		char* tmp = rv_strcat3(AVATAR_ROOT, "/", un);
+		char* path = rv_strcat(tmp, ".png");
+		free(tmp);
+		if(access(path, F_OK) != 0) {
+			rv_avatar_generate(path, un);
+		}
+		free(path);
+	}
 }
 
 void render_page(void) {
