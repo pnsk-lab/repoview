@@ -112,6 +112,7 @@ char* html_escape_nl_to_br(const char* input) {
 	return r;
 }
 
+int fcounter = 0;
 void list_repo(const char* name, const char* rev) {
 	char* showname = html_escape(name);
 	char* urluser = url_escape(user);
@@ -141,7 +142,6 @@ void list_repo(const char* name, const char* rev) {
 	free(urlrepo);
 }
 
-int fcounter = 0;
 void list_files(const char* pathname) {
 	if(fcounter == 0) {
 		add_data(&nav, "<li><a href=\"#filelist\">File List</a></li>\n");
