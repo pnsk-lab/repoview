@@ -12,16 +12,24 @@
 #include "rv_auth.h"
 #include "rv_multipart.h"
 
+#ifdef USE_GRAPHICSMAGICK
+#include "rv_magick.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 char* postdata;
+char* nocache;
 
 int main() {
 	srand(time(NULL));
+	nocache = malloc(512);
+	sprintf(nocache, "?time=%llu", (unsigned long long)time(NULL));
 	rv_check_sanity();
 	rv_init_db();
+	rv_init_magick();
 	rv_parse_query(getenv("QUERY_STRING"));
 	rv_save_query('Q');
 	postdata = malloc(1);

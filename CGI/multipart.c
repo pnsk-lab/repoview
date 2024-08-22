@@ -39,6 +39,9 @@ void rv_parse_multipart(unsigned char* buffer, char* boundary, unsigned long lon
 	unsigned long long fstart = 0;
 	char* b = rv_strcat3("--", boundary, "\r");
 	char* eb = rv_strcat3("--", boundary, "--\r");
+	multipart_entries = malloc(sizeof(*multipart_entries));
+	multipart_entries[0] = NULL;
+	char* name = NULL;
 	for(i = 0;; i++) {
 		if(i == length || buffer[i] == '\n') {
 			char* line = malloc(i - incr + 1);
@@ -52,6 +55,23 @@ void rv_parse_multipart(unsigned char* buffer, char* boundary, unsigned long lon
 					unsigned long long fend = i - strlen(line) - 2;
 					char* data = buffer + fstart;
 					unsigned long long datalen = fend - fstart;
+					struct multipart_entry* entry = malloc(sizeof(*entry));
+					entry->length = datalen;
+					entry->data = malloc(datalen);
+					entry->name = rv_strdup(name);
+					unsigned long long j;
+					for(j = 0; j < datalen; j++) entry->data[j] = data[j];
+
+					struct multipart_entry** old_entries = multipart_entries;
+					for(j = 0; old_entries[j] != NULL; j++)
+						;
+					multipart_entries = malloc(sizeof(*multipart_entries) * (j + 2));
+					for(j = 0; old_entries[j] != NULL; j++) {
+						multipart_entries[j] = old_entries[j];
+					}
+					multipart_entries[j] = entry;
+					multipart_entries[j + 1] = NULL;
+					free(old_entries);
 				}
 				phase = 0;
 				if(strcmp(eb, line) == 0) {
@@ -60,12 +80,64 @@ void rv_parse_multipart(unsigned char* buffer, char* boundary, unsigned long lon
 				}
 			} else if(phase == 0) {
 				line[strlen(line) - 1] = 0;
-				fprintf(stderr, "%s\n", line);
+				int j;
+				for(j = 0; line[j] != 0; j++) {
+					if(line[j] == ':') {
+						line[j] = 0;
+						char* value = "";
+						j++;
+						for(; line[j] != 0; j++) {
+							if(line[j] != ' ' && line[j] != '\t') {
+								value = line + j;
+								break;
+							}
+						}
+						if(strcasecmp(line, "Content-Disposition") == 0) {
+							int j;
+							int incrval = 0;
+							for(j = 0;; j++) {
+								if(value[j] == ';' || value[j] == 0) {
+									char oldc = value[j];
+									value[j] = 0;
+									char* kv = value + incrval;
+									j++;
+									for(; value[j] != 0; j++) {
+										if(value[j] != ' ' && value[j] != '\t') break;
+									}
+									incrval = j;
+									int k;
+									for(k = 0; kv[k] != 0; k++) {
+										if(kv[k] == '=') {
+											kv[k] = 0;
+											if(strcmp(kv, "name") == 0) {
+												if(name != NULL) free(name);
+												name = malloc(strlen(kv + k + 1) + 1);
+												char* nkv = kv + k + 1;
+												int l = 0;
+												int incrn = 0;
+												for(l = 0; nkv[l] != 0; l++) {
+													if(nkv[l] != '"') {
+														name[incrn++] = nkv[l];
+													}
+												}
+												name[incrn] = 0;
+											}
+											break;
+										}
+									}
+									if(oldc == 0) break;
+								}
+							}
+						}
+						break;
+					}
+				}
 			}
 			free(line);
 			incr = i + 1;
 			if(i == length) break;
 		}
 	}
+	if(name != NULL) free(name);
 	free(b);
 }

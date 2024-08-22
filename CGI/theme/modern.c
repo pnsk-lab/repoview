@@ -7,6 +7,7 @@
 #include "rv_auth.h"
 #include "rv_db.h"
 #include "rv_repo.h"
+#include "rv_multipart.h"
 
 #include "../../config.h"
 
@@ -18,11 +19,16 @@
 #include "rv_avatar.h"
 #endif
 
+#ifdef USE_GRAPHICSMAGICK
+#include "rv_magick.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+extern char* nocache;
 extern char* buffer;
 void add_data(char** data, const char* txt);
 void render_stuff();
@@ -289,7 +295,7 @@ void render_page(void) {
 				bool reject = false;
 				char* name = rv_get_query("username");
 				for(i = 0; name[i] != 0; i++) {
-					if(name[i] == REPO_USER_DELIM || name[i] == '#' || name[i] == '\\' || name[i] == '/') {
+					if(name[i] == REPO_USER_DELIM || name[i] == '#' || name[i] == '\\' || name[i] == '/' || name[i] == ':' || name[i] == '\n' || name[i] == '\r') {
 						char cbuf[2];
 						cbuf[0] = REPO_USER_DELIM;
 						cbuf[1] = 0;
@@ -388,13 +394,49 @@ void render_page(void) {
 			add_data(&page, WWW_AVATAR_ROOT);
 			add_data(&page, "/");
 			add_data(&page, user);
-			add_data(&page, ".png\" alt=\"Your Icon\"></a>");
+			add_data(&page, ".png");
+			add_data(&page, nocache);
+			add_data(&page, "\" alt=\"Your Icon\" width=\"50%\"></a>");
 			add_data(&page, "<form action=\"");
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=uploadpfp\" method=\"POST\" enctype=\"multipart/form-data\">\n");
 			add_data(&page, "	<input type=\"file\" name=\"pfp\">\n");
 			add_data(&page, "	<input type=\"submit\" value=\"Upload\">\n");
 			add_data(&page, "</form>\n");
+		}
+#endif
+#ifdef USE_AVATAR
+	} else if(strcmp(query, "uploadpfp") == 0) {
+		title = rv_strdup("Uploading Profile Picture Result");
+		page = rv_strdup("");
+		if(user == NULL) {
+			add_data(&page, "It looks like you are not logged in.<br>Want to <a href=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else if(rv_get_multipart("pfp") == NULL) {
+			add_data(&page, "Invalid Form.");
+		} else {
+			struct multipart_entry* entry = rv_get_multipart("pfp");
+			char* tmp = rv_strcat3(AVATAR_ROOT, "/", user);
+			char* path = rv_strcat(tmp, ".tmp");
+			char* outpath = rv_strcat(tmp, ".png");
+			free(tmp);
+			FILE* f = fopen(path, "wb");
+			fwrite(entry->data, 1, entry->length, f);
+			fclose(f);
+			char* reason;
+			if(rv_resize_picture(path, outpath, &reason)) {
+				add_data(&page, "Uploaded the profile picture successfully.\n");
+			} else {
+				add_data(&page, "Failed to upload the profile picture.<br><code>\n");
+				char* esc = html_escape(reason);
+				add_data(&page, esc);
+				free(esc);
+				add_data(&page, "</code>\n");
+				free(reason);
+			}
+			free(path);
+			free(outpath);
 		}
 #endif
 	} else if(strcmp(query, "myrepo") == 0) {
@@ -451,7 +493,7 @@ void render_page(void) {
 			bool reject = false;
 			char* name = rv_get_query("name");
 			for(i = 0; name[i] != 0; i++) {
-				if(name[i] == REPO_USER_DELIM || name[i] == '#' || name[i] == '\\' || name[i] == '/') {
+				if(name[i] == REPO_USER_DELIM || name[i] == '#' || name[i] == '\\' || name[i] == '/' || name[i] == ':' || name[i] == '\n' || name[i] == '\r') {
 					char cbuf[2];
 					cbuf[0] = REPO_USER_DELIM;
 					cbuf[1] = 0;

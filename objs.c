@@ -22,6 +22,10 @@ int main() {
 #endif
 	printf(" ");
 #if defined(USE_AVATAR)
+	printf("magick.o");
+#endif
+	printf(" ");
+#if defined(USE_AVATAR)
 	printf("avatar.o");
 #endif
 	printf("\n");
