@@ -38,7 +38,7 @@ char* title = NULL;
 char* desc = NULL;
 char* page = NULL;
 char* nav = NULL;
-char* logo = NULL;
+char* logopath = NULL;
 char* grepouser;
 extern char* user;
 
@@ -797,7 +797,7 @@ void render_page(void) {
 					desc = html_escape_nl_to_br(buf);
 
 					char* tmp = rv_strcat3(WWW_AVATAR_ROOT, "/", rv_get_query("username"));
-					logo = rv_strcat(tmp, ".png");
+					logopath = rv_strcat(tmp, ".png");
 					free(tmp);
 
 					fclose(f);
@@ -861,7 +861,7 @@ freeall:
 	free(desc);
 	free(title);
 	free(nav);
-	if(logo != NULL) free(logo);
+	if(logopath != NULL) free(logopath);
 }
 
 char* escape(const char* str) {
@@ -1088,8 +1088,8 @@ void render_stuff(void) {
 	add_data(&buffer, "				</p>\n");
 	add_data(&buffer, "			</div>\n");
 	add_data(&buffer, "			<img id=\"logo\" src=\"");
-	if(logo != NULL) {
-		add_data(&buffer, logo);
+	if(logopath != NULL) {
+		add_data(&buffer, logopath);
 	} else {
 		add_data(&buffer, INSTANCE_LOGO);
 	}
