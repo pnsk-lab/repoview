@@ -813,6 +813,12 @@ void render_page(void) {
 				free(tmp);
 
 				free(path);
+
+				add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
+				add_data(&page, "<table border=\"0\">\n");
+				add_data(&page, "<tr><th>Repository name</th><th>Revision</th></tr>\n");
+				rv_repo_list(rv_get_query("username"), list_repo);
+				add_data(&page, "</table>\n");
 			} else {
 				add_data(&page, "User does not exist.\n");
 			}
