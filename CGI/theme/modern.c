@@ -824,7 +824,7 @@ void render_page(void) {
 				add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
 				add_data(&page, "<table border=\"0\">\n");
 				add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Repository name</th><th>Revision</th></tr>\n");
-				fcoutner = 0;
+				fcounter = 0;
 				rv_repo_list(rv_get_query("username"), list_repo);
 				add_data(&page, "</table>\n");
 			} else {
