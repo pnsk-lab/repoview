@@ -23,6 +23,7 @@
 #include "rv_magick.h"
 #endif
 
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,8 +38,16 @@ char* title = NULL;
 char* desc = NULL;
 char* page = NULL;
 char* nav = NULL;
+char* logo = NULL;
 char* grepouser;
 extern char* user;
+
+bool invalid_char(char c) {
+	if(c >= '0' && c <= '9') return false;
+	if(c >= 'a' && c <= 'z') return false;
+	if(c >= 'A' && c <= 'Z') return false;
+	if(c == '_' && c == '-' && c == '.') return false;
+}
 
 char* url_escape(const char* input) {
 	const char hex[] = "0123456789ABCDEF";
@@ -272,7 +281,7 @@ void render_page(void) {
 		cbuf[1] = 0;
 		add_data(&page, "Username cannot contain '<code>");
 		add_data(&page, cbuf);
-		add_data(&page, "</code>', '<code>#</code>', '<code>\\</code>', and '<code>/</code>'.<br>");
+		add_data(&page, "</code>'.<br>");
 		add_data(&page, "	<input type=\"submit\" value=\"Signup\">\n");
 		add_data(&page, "</form>\n");
 	} else if(strcmp(query, "sendsignup") == 0) {
@@ -295,7 +304,7 @@ void render_page(void) {
 				bool reject = false;
 				char* name = rv_get_query("username");
 				for(i = 0; name[i] != 0; i++) {
-					if(name[i] == REPO_USER_DELIM || name[i] == '#' || name[i] == '\\' || name[i] == '/' || name[i] == ':' || name[i] == '\n' || name[i] == '\r') {
+					if(name[i] == REPO_USER_DELIM || invalid_char(name[i])) {
 						char cbuf[2];
 						cbuf[0] = REPO_USER_DELIM;
 						cbuf[1] = 0;
@@ -385,8 +394,14 @@ void render_page(void) {
 			add_data(&page, "/?page=login\">log in</a>?\n");
 		} else {
 			page = rv_strdup("");
-			add_data(&page, "<h2 id=\"youricon\">Your Icon</h2>\n");
-			add_data(&page, "<a href=\"");
+			nav = rv_strdup("");
+			add_data(&nav, "<li><a href=\"#youricon\">Your Icon</a></li>\n");
+			add_data(&nav, "<li><a href=\"#bio\">Bio</a></li>\n");
+			add_data(&page, "<form action=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=upload\" method=\"POST\" enctype=\"multipart/form-data\">\n");
+			add_data(&page, "	<h2 id=\"youricon\">Your Icon</h2>\n");
+			add_data(&page, "	<a href=\"");
 			add_data(&page, WWW_AVATAR_ROOT);
 			add_data(&page, "/");
 			add_data(&page, user);
@@ -396,47 +411,73 @@ void render_page(void) {
 			add_data(&page, user);
 			add_data(&page, ".png");
 			add_data(&page, nocache);
-			add_data(&page, "\" alt=\"Your Icon\" width=\"50%\"></a>");
-			add_data(&page, "<form action=\"");
-			add_data(&page, INSTANCE_ROOT);
-			add_data(&page, "/?page=uploadpfp\" method=\"POST\" enctype=\"multipart/form-data\">\n");
+			add_data(&page, "\" alt=\"Your Icon\" width=\"50%\"></a><br>");
 			add_data(&page, "	<input type=\"file\" name=\"pfp\">\n");
-			add_data(&page, "	<input type=\"submit\" value=\"Upload\">\n");
+			add_data(&page, "	<h2 id=\"bio\">Bio</h2>\n");
+			add_data(&page, "	<textarea name=\"bio\" style=\"width: 100%;resize: none;height: 128px;\">\n");
+			char* path = rv_strcat3(BIO_ROOT, "/", user);
+			FILE* f = fopen(path, "r");
+			if(f != NULL) {
+				struct stat s;
+				stat(path, &s);
+				char* biobuf = malloc(s.st_size + 1);
+				fread(biobuf, 1, s.st_size, f);
+				biobuf[s.st_size] = 0;
+
+				char* esc = html_escape(biobuf);
+				add_data(&page, esc);
+				free(esc);
+
+				free(biobuf);
+				fclose(f);
+			}
+			free(path);
+			add_data(&page, "</textarea>\n");
+			add_data(&page, "	<input type=\"submit\" value=\"Send\">\n");
 			add_data(&page, "</form>\n");
 		}
 #endif
 #ifdef USE_AVATAR
-	} else if(strcmp(query, "uploadpfp") == 0) {
-		title = rv_strdup("Uploading Profile Picture Result");
+	} else if(strcmp(query, "upload") == 0) {
+		title = rv_strdup("Uploading My Page Result");
 		page = rv_strdup("");
 		if(user == NULL) {
 			add_data(&page, "It looks like you are not logged in.<br>Want to <a href=\"");
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=login\">log in</a>?\n");
-		} else if(rv_get_multipart("pfp") == NULL) {
-			add_data(&page, "Invalid Form.");
 		} else {
 			struct multipart_entry* entry = rv_get_multipart("pfp");
-			char* tmp = rv_strcat3(AVATAR_ROOT, "/", user);
-			char* path = rv_strcat(tmp, ".tmp");
-			char* outpath = rv_strcat(tmp, ".png");
-			free(tmp);
-			FILE* f = fopen(path, "wb");
-			fwrite(entry->data, 1, entry->length, f);
-			fclose(f);
-			char* reason;
-			if(rv_resize_picture(path, outpath, &reason)) {
-				add_data(&page, "Uploaded the profile picture successfully.\n");
-			} else {
-				add_data(&page, "Failed to upload the profile picture.<br><code>\n");
-				char* esc = html_escape(reason);
-				add_data(&page, esc);
-				free(esc);
-				add_data(&page, "</code>\n");
-				free(reason);
+			if(entry != NULL && entry->length > 0) {
+				char* tmp = rv_strcat3(AVATAR_ROOT, "/", user);
+				char* path = rv_strcat(tmp, ".tmp");
+				char* outpath = rv_strcat(tmp, ".png");
+				free(tmp);
+				FILE* f = fopen(path, "wb");
+				fwrite(entry->data, 1, entry->length, f);
+				fclose(f);
+				char* reason;
+				if(rv_resize_picture(path, outpath, &reason)) {
+					add_data(&page, "Uploaded the profile picture successfully.\n");
+				} else {
+					add_data(&page, "Failed to upload the profile picture.<br><code>\n");
+					char* esc = html_escape(reason);
+					add_data(&page, esc);
+					free(esc);
+					add_data(&page, "</code>\n");
+					free(reason);
+				}
+				free(path);
+				free(outpath);
 			}
-			free(path);
-			free(outpath);
+			entry = rv_get_multipart("bio");
+			if(entry != NULL) {
+				char* path = rv_strcat3(BIO_ROOT, "/", user);
+				FILE* f = fopen(path, "w");
+				fwrite(entry->data, 1, entry->length, f);
+				fclose(f);
+				free(path);
+				add_data(&page, "Uploaded the bio successfully.\n");
+			}
 		}
 #endif
 	} else if(strcmp(query, "myrepo") == 0) {
@@ -469,7 +510,7 @@ void render_page(void) {
 			add_data(&page, "	</table>\n");
 			add_data(&page, "Repository name cannot contain '<code>");
 			add_data(&page, cbuf);
-			add_data(&page, "</code>', '<code>#</code>', '<code>\\</code>', and '<code>/</code>'.");
+			add_data(&page, "</code>'.");
 			add_data(&page, "</form>\n");
 			add_data(&page, "<h2 id=\"repolist\">Repository List</h2>\n");
 			add_data(&page, "<table border=\"0\">\n");
@@ -493,7 +534,7 @@ void render_page(void) {
 			bool reject = false;
 			char* name = rv_get_query("name");
 			for(i = 0; name[i] != 0; i++) {
-				if(name[i] == REPO_USER_DELIM || name[i] == '#' || name[i] == '\\' || name[i] == '/' || name[i] == ':' || name[i] == '\n' || name[i] == '\r') {
+				if(name[i] == REPO_USER_DELIM || invalid_char(name[i])) {
 					char cbuf[2];
 					cbuf[0] = REPO_USER_DELIM;
 					cbuf[1] = 0;
@@ -657,7 +698,7 @@ void render_page(void) {
 					add_data(&page, esc);
 					free(esc);
 					free(readme);
-					add_data(&page, "			</textarea>\n");
+					add_data(&page, "</textarea>\n");
 					add_data(&page, "		</td>\n");
 					add_data(&page, "	</tr>\n");
 					add_data(&page, "</table>\n");
@@ -732,6 +773,39 @@ void render_page(void) {
 				add_data(&page, "Repository does not exist.<br>\n");
 			}
 		}
+	} else if(strcmp(query, "person") == 0) {
+		title = rv_strdup("Person");
+		page = rv_strdup("");
+
+		rv_load_query('Q');
+		if(rv_get_query("username") == NULL) {
+			add_data(&page, "Invalid Form.\n");
+		} else {
+			if(rv_has_user(rv_get_query("username"))) {
+				add_data(&title, " - ");
+				add_data(&title, rv_get_query("username"));
+				char* path = rv_strcat3(BIO_ROOT, "/", rv_get_query("username"));
+				FILE* f = fopen(path, "r");
+				if(f != NULL) {
+					struct stat s;
+					stat(path, &s);
+					char* buf = malloc(s.st_size + 1);
+					fread(buf, 1, s.st_size, f);
+					buf[s.st_size] = 0;
+
+					desc = html_escape_nl_to_br(buf);
+
+					char* tmp = rv_strcat3(WWW_AVATAR_ROOT, "/", rv_get_query("username"));
+					logo = rv_strcat(tmp, ".png");
+					free(tmp);
+
+					fclose(f);
+				}
+				free(path);
+			} else {
+				add_data(&page, "User does not exist.\n");
+			}
+		}
 	} else if(strcmp(query, "sendmanrepo") == 0) {
 		title = rv_strdup("Modifying Repository Result");
 		page = rv_strdup("");
@@ -786,6 +860,7 @@ freeall:
 	free(desc);
 	free(title);
 	free(nav);
+	if(logo != NULL) free(logo);
 }
 
 char* escape(const char* str) {
@@ -978,7 +1053,24 @@ void render_stuff(void) {
 		add_data(&buffer, "			</div>\n");
 	}
 	if(user != NULL) {
-		add_data(&buffer, "<div style=\"float: right;font-size: 10px;padding-top: 36px;padding-right: 0;font-style: italic;\">You have logged in as <a href=\"");
+#ifdef USE_AVATAR
+#ifdef USE_MYPAGE
+		add_data(&buffer, "<a href=\"");
+		add_data(&buffer, INSTANCE_ROOT);
+		add_data(&buffer, "/?page=person&username=");
+		add_data(&buffer, user);
+		add_data(&buffer, "\">");
+#endif
+		add_data(&buffer, "<img src=\"");
+		add_data(&buffer, WWW_AVATAR_ROOT);
+		add_data(&buffer, "/");
+		add_data(&buffer, user);
+		add_data(&buffer, ".png\" alt=\"Your Icon\" style=\"float: right;height: 32px;\">");
+#ifdef USE_MYPAGE
+		add_data(&buffer, "</a>");
+#endif
+#endif
+		add_data(&buffer, "<div style=\"clear: both;float: right;font-size: 10px;padding-right: 0;font-style: italic;\">You have logged in as <a href=\"");
 		add_data(&buffer, INSTANCE_ROOT);
 		add_data(&buffer, "/?page=mypage\">");
 		add_data(&buffer, user);
@@ -995,7 +1087,11 @@ void render_stuff(void) {
 	add_data(&buffer, "				</p>\n");
 	add_data(&buffer, "			</div>\n");
 	add_data(&buffer, "			<img id=\"logo\" src=\"");
-	add_data(&buffer, INSTANCE_LOGO);
+	if(logo != NULL) {
+		add_data(&buffer, logo);
+	} else {
+		add_data(&buffer, INSTANCE_LOGO);
+	}
 	add_data(&buffer, "\" height=\"128px\" alt=\"logo\">\n");
 	add_data(&buffer, "		</div>\n");
 	add_data(&buffer, "		<div id=\"content\">\n");

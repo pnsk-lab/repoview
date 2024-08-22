@@ -104,6 +104,10 @@ int check_mypage(void) {
 	fprintf(stderr, "USE_MYPAGE is defined, but USE_AVATAR is not defined.\n");
 	st = 1;
 #endif
+#if defined(USE_MYPAGE) && !defined(BIO_ROOT)
+	fprintf(stderr, "USE_MYPAGE is defined, but BIO_ROOT is not defined.\n");
+	st = 1;
+#endif
 	return st;
 }
 
