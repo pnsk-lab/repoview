@@ -100,6 +100,19 @@ int check_mypage(void) {
 	fprintf(stderr, "USE_MYPAGE is defined, but USE_LIBPNG is not defined.\n");
 	st = 1;
 #endif
+#if defined(USE_MYPAGE) && !defined(USE_AVATAR)
+	fprintf(stderr, "USE_MYPAGE is defined, but USE_AVATAR is not defined.\n");
+	st = 1;
+#endif
+	return st;
+}
+
+int check_avatar(void) {
+	int st = 0;
+#if defined(USE_AVATAR) && !defined(USE_LIBPNG)
+	fprintf(stderr, "USE_AVATAR is defined, but USE_LIBPNG is not defined.\n");
+	st = 1;
+#endif
 	return st;
 }
 
@@ -114,6 +127,8 @@ int main() {
 	st = check_files();
 	if(st != 0) goto fail;
 	st = check_mypage();
+	if(st != 0) goto fail;
+	st = check_avatar();
 	if(st != 0) goto fail;
 	printf("Config validation successful.\n");
 	return 0;

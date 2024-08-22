@@ -21,7 +21,7 @@ int main() {
 	printf("enscript.o");
 #endif
 	printf(" ");
-#if defined(USE_MYPAGE)
+#if defined(USE_AVATAR)
 	printf("avatar.o");
 #endif
 	printf("\n");
