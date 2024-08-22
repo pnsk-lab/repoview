@@ -798,6 +798,7 @@ void render_page(void) {
 
 					char* tmp = rv_strcat3(WWW_AVATAR_ROOT, "/", rv_get_query("username"));
 					logopath = rv_strcat(tmp, ".png");
+					fprintf(stderr, "%s\n", logopath);
 					free(tmp);
 
 					fclose(f);
