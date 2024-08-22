@@ -9,7 +9,7 @@
 
 #include <png.h>
 
-int hex_to_num(const char* hex, int len) {
+int hex_to_num_len(const char* hex, int len) {
 	int i;
 	int num = 0;
 	for(i = 0; i < len; i++) {
@@ -29,9 +29,9 @@ char* generate_ident(const char* username, int* r, int* g, int* b) {
 	char* ident = malloc(25);
 	char* hash = rv_md5(username);
 
-	double h = hex_to_num(hash + 32 - 2 - 2 - 3, 3);
-	double s = hex_to_num(hash + 32 - 2 - 2, 2);
-	double v = hex_to_num(hash + 32 - 2, 2);
+	double h = hex_to_num_len(hash + 32 - 2 - 2 - 3, 3);
+	double s = hex_to_num_len(hash + 32 - 2 - 2, 2);
+	double v = hex_to_num_len(hash + 32 - 2, 2);
 
 	h = h * 360 / 4095;
 	s = 65 - s * 20 / 255;
