@@ -830,6 +830,7 @@ void render_page(void) {
 				fcounter = 0;
 				instead_username = rv_get_query("username");
 				rv_repo_list(rv_get_query("username"), list_repo);
+				instead_username = NULL;
 				add_data(&page, "</table>\n");
 			} else {
 				add_data(&page, "User does not exist.\n");
