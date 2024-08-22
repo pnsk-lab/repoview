@@ -801,7 +801,7 @@ void render_page(void) {
 			add_data(&page, "Invalid Form.\n");
 		} else {
 			if(rv_has_user(rv_get_query("username"))) {
-				add_data(&title, "<li><a href=\"#repolist\">Repository List</a></li>");
+				add_data(&nav, "<li><a href=\"#repolist\">Repository List</a></li>");
 				add_data(&title, " - ");
 				add_data(&title, rv_get_query("username"));
 				char* path = rv_strcat3(BIO_ROOT, "/", rv_get_query("username"));
