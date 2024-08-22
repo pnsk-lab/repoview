@@ -221,7 +221,9 @@ void list_files(const char* pathname) {
 	add_data(&page, "\"><td><a href=\"");
 	add_data(&page, query);
 	add_data(&page, "\">");
-	add_data(&page, pathname);
+	esc = html_escape(pathname);
+	add_data(&page, esc);
+	free(esc);
 	add_data(&page, "</a></td>\n");
 	add_data(&page, "<td>\n");
 	if(strcmp(sz, "-1") != 0) {
