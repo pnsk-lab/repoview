@@ -14,9 +14,14 @@
 #include "rv_enscript.h"
 #endif
 
+#ifdef USE_AVATAR
+#include "rv_avatar.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 extern char* buffer;
 void add_data(char** data, const char* txt);
@@ -208,10 +213,26 @@ void list_files(const char* pathname) {
 	free(urlpath);
 }
 
+void generate_avatar(void) {
+	if(user != NULL) {
+		char* tmp = rv_strcat3(AVATAR_ROOT, "/", user);
+		char* path = rv_strcat(tmp, ".png");
+		free(tmp);
+		if(access(path, F_OK) != 0) {
+			rv_avatar_generate(path, user);
+		}
+		free(path);
+	}
+}
+
 void render_page(void) {
 	rv_load_query('Q');
 	char* query = rv_get_query("page");
 	if(query == NULL) query = "welcome";
+
+#ifdef USE_AVATAR
+	generate_avatar();
+#endif
 
 	if(strcmp(query, "welcome") == 0) {
 		title = rv_strdup("Welcome");
@@ -356,6 +377,24 @@ void render_page(void) {
 			page = rv_strdup("It looks like you are not logged in.<br>Want to <a href=\"");
 			add_data(&page, INSTANCE_ROOT);
 			add_data(&page, "/?page=login\">log in</a>?\n");
+		} else {
+			page = rv_strdup("");
+			add_data(&page, "<h2 id=\"youricon\">Your Icon</h2>\n");
+			add_data(&page, "<a href=\"");
+			add_data(&page, WWW_AVATAR_ROOT);
+			add_data(&page, "/");
+			add_data(&page, user);
+			add_data(&page, ".png\"><img src=\"");
+			add_data(&page, WWW_AVATAR_ROOT);
+			add_data(&page, "/");
+			add_data(&page, user);
+			add_data(&page, ".png\" alt=\"Your Icon\"></a>");
+			add_data(&page, "<form action=\"");
+			add_data(&page, INSTANCE_ROOT);
+			add_data(&page, "/?page=uploadpfp\" method=\"POST\" enctype=\"multipart/form-data\">\n");
+			add_data(&page, "	<input type=\"file\" name=\"pfp\">\n");
+			add_data(&page, "	<input type=\"submit\" value=\"Upload\">\n");
+			add_data(&page, "</form>\n");
 		}
 #endif
 	} else if(strcmp(query, "myrepo") == 0) {
@@ -694,6 +733,11 @@ void render_page(void) {
 	if(desc == NULL) desc = rv_strdup("");
 	if(page == NULL) page = rv_strdup("");
 	if(nav == NULL) nav = rv_strdup("");
+
+#ifdef USE_AVATAR
+	generate_avatar();
+#endif
+
 	render_stuff();
 freeall:
 	free(page);
