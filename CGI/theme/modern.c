@@ -113,9 +113,10 @@ char* html_escape_nl_to_br(const char* input) {
 }
 
 int fcounter = 0;
+char* instead_username = NULL;
 void list_repo(const char* name, const char* rev) {
 	char* showname = html_escape(name);
-	char* urluser = url_escape(user);
+	char* urluser = url_escape(instead_username == NULL ? user : instead_username);
 	char* urlrepo = url_escape(name);
 	add_data(&page, "<tr style=\"background-color: #");
 	if((fcounter % 2) == 0) {
@@ -825,6 +826,7 @@ void render_page(void) {
 				add_data(&page, "<table border=\"0\">\n");
 				add_data(&page, "<tr style=\"background-color: #D2E1F6;\"><th>Repository name</th><th>Revision</th></tr>\n");
 				fcounter = 0;
+				instead_username = rv_get_query("username");
 				rv_repo_list(rv_get_query("username"), list_repo);
 				add_data(&page, "</table>\n");
 			} else {
