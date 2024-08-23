@@ -77,7 +77,6 @@ char* rv_enscript(const char* repouser, const char* path, const char* lang) {
 		}
 		char* newdata = malloc(1);
 		newdata[0] = 0;
-		free(d);
 		int i;
 		int incr = 0;
 		bool log = false;
@@ -100,6 +99,7 @@ char* rv_enscript(const char* repouser, const char* path, const char* lang) {
 				if(oldc == 0) break;
 			}
 		}
+		free(d);
 		return newdata;
 	}
 }
