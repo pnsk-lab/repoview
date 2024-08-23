@@ -75,7 +75,7 @@ char* rv_logged_in(void) {
 		if(strcmp(cookie_entries[i]->key, "token") == 0) {
 			char* who = rv_who_has_token(cookie_entries[i]->value);
 			if(who == NULL) {
-				printf("Set-Cookie: token=; HttpOnly; Expires=0; SameStie=Lax\r\n");
+				printf("Set-Cookie: token=; HttpOnly; Expires=0; SameSite=Lax\r\n");
 			}
 			return who;
 			break;
@@ -88,7 +88,7 @@ void rv_logout(void) {
 	int i;
 	for(i = 0; cookie_entries[i] != NULL; i++) {
 		if(strcmp(cookie_entries[i]->key, "token") == 0) {
-			printf("Set-Cookie: token=; HttpOnly; Expires=0; SameStie=Lax\r\n");
+			printf("Set-Cookie: token=; HttpOnly; Expires=0; SameSite=Lax\r\n");
 			rv_remove_token(cookie_entries[i]->value);
 			break;
 		}
@@ -97,7 +97,7 @@ void rv_logout(void) {
 
 void rv_save_login(const char* username) {
 	char* token = rv_new_token(username);
-	printf("Set-Cookie: token=%s; HttpOnly; SameStie=Lax\r\n", token);
+	printf("Set-Cookie: token=%s; HttpOnly; SameSite=Lax\r\n", token);
 	free(token);
 }
 
