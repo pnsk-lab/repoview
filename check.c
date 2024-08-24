@@ -2,6 +2,7 @@
 
 #include "config.h"
 
+#include <string.h>
 #include <stdio.h>
 
 int check_db(void) {
@@ -128,23 +129,26 @@ int check_avatar(void) {
 	return st;
 }
 
-int main() {
-	int st;
-	st = check_db();
-	if(st != 0) goto fail;
-	st = check_auth();
-	if(st != 0) goto fail;
-	st = check_theme();
-	if(st != 0) goto fail;
-	st = check_files();
-	if(st != 0) goto fail;
-	st = check_mypage();
-	if(st != 0) goto fail;
-	st = check_avatar();
-	if(st != 0) goto fail;
-	printf("Config validation successful.\n");
-	return 0;
+int main(int argc, char** argv) {
+	if(argc == 1){
+		int st;
+		st = check_db();
+		if(st != 0) goto fail;
+		st = check_auth();
+		if(st != 0) goto fail;
+		st = check_theme();
+		if(st != 0) goto fail;
+		st = check_files();
+		if(st != 0) goto fail;
+		st = check_mypage();
+		if(st != 0) goto fail;
+		st = check_avatar();
+		if(st != 0) goto fail;
+		printf("Config validation successful.\n");
+		return 0;
 fail:
-	fprintf(stderr, "Config validation failure.\n");
-	return st;
+		fprintf(stderr, "Config validation failure.\n");
+		return st;
+	}
+	return 0;
 }

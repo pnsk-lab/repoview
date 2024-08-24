@@ -5,7 +5,7 @@ PLATFORM = generic
 
 FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) EXTOBJS="`./objs`" EXTLIBS="`./libs`" EXTCFLAGS=""
 
-.PHONY: all clean format ./CGI
+.PHONY: all clean format install ./CGI
 
 all: ./CGI
 
