@@ -248,7 +248,7 @@ void generate_avatar(void) {
 		}
 		free(path);
 	}
-	if(rv_get_query("username") != NULL && rv_has_user(rv_get_query("username")) {
+	if(rv_get_query("username") != NULL && rv_has_user(rv_get_query("username"))) {
 		char* un = rv_get_query("username");
 		char* tmp = rv_strcat3(AVATAR_ROOT, "/", un);
 		char* path = rv_strcat(tmp, ".png");
