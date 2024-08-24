@@ -1114,7 +1114,7 @@ void render_stuff(void) {
 		add_data(&buffer, "</a>");
 #endif
 #endif
-		add_data(&buffer, "<div style=\"clear: both;float: right;font-size: 10px;padding-right: 0;font-style: italic;\">You have logged in as <a href=\"");
+		add_data(&buffer, "<div style=\"clear: both;float: right;font-size: 10px;padding-right: 0;font-style: italic;padding-top: 0;\">You have logged in as <a href=\"");
 		add_data(&buffer, INSTANCE_ROOT);
 		add_data(&buffer, "/?page=mypage\">");
 		add_data(&buffer, user);
