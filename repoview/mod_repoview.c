@@ -45,7 +45,7 @@
 /* The sample content handler */
 static int repoview_handler(request_rec *r)
 {
-    if (strcmp(r->handler, "repoview")) {
+    if (strcmp(r->handler, "repoview-handler")) {
         return DECLINED;
     }
     r->content_type = "text/html";      

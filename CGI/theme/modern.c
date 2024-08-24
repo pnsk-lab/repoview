@@ -934,6 +934,8 @@ char* escape(const char* str) {
 
 void render_stuff(void) {
 	char* escaped;
+	char cbuf[2];
+	cbuf[1] = 0;
 	add_data(&buffer, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n");
 	add_data(&buffer, "<html>\n");
 	add_data(&buffer, "	<head>\n");
@@ -941,7 +943,18 @@ void render_stuff(void) {
 	add_data(&buffer, "		<title>");
 	add_data(&buffer, INSTANCE_NAME);
 	add_data(&buffer, " - ");
-	add_data(&buffer, title);
+	int i;
+	bool br = false;
+	for(i = 0; title[i] != 0; i++){
+		if(title[i] == '<'){
+			br = true;
+		}else if(title[i] == '>'){
+			br = false;
+		}else if(!br){
+			cbuf[0] = title[i];
+			add_data(&buffer, cbuf);
+		}
+	}
 	add_data(&buffer, "</title>\n");
 	add_data(&buffer, "		<style type=\"text/css\">\n");
 	add_data(&buffer, "* {\n");
