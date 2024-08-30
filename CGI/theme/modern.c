@@ -83,6 +83,8 @@ char* html_escape(const char* input) {
 			add_data(&r, "&lt;");
 		} else if(input[i] == '>') {
 			add_data(&r, "&gt;");
+		} else if(input[i] == '&') {
+			add_data(&r, "&amp;");
 		} else {
 			cbuf[0] = input[i];
 			add_data(&r, cbuf);
